@@ -91,6 +91,4 @@ var siren = {
   }
 };
 
-siren.to('http://localhost:3000/hywit/1337/sign');
-
-siren.at;
+//siren.to('http://localhost:3000/hywit/1337/sign');
