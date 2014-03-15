@@ -79,7 +79,7 @@ var siren = {
 
   "follow" : function() {
     var self = this;
-    if (self.statusCode >= 302 && self.statusCode < 400) {
+    if (self.statusCode >= 300 && self.statusCode < 400) {
       if (self.location) {
         return visit(self, self.location);
       }
