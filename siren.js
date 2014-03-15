@@ -13,16 +13,23 @@ var visit = function(self, url) {
     self.statusCode = response.statusCode;
     self.headers = response.headers;
     self.location = response.headers.location;
-    self.body = JSON.parse(body);
-    self.properties = self.body.properties;
-    self.actions = self.body.actions;
-    self.links = self.body.links;
+    if (body.length > 0) {
+      self.siren = JSON.parse(body);
+      self.properties = self.siren.properties;
+      self.actions = self.siren.actions;
+      self.links = self.siren.links;
+    }
+    else {
+      self.siren = "";
+      self.properties = undefined;
+      self.actions = undefined;
+      self.links = undefined;
+    }
     console.log(".");
   });
 };
 
 var findAction = function(self, actionName) {
-  console.log('find action ' + actionName);
   for (var i=0, len = self.actions.length; i < len; i++) {
     var a = self.actions[i];
     if (a.name === actionName) {
@@ -59,7 +66,7 @@ var siren = {
       
       // also: whatever else necessary to make proper request.
       // includes: http method, request parameters.
-      return visit(self, requestData);
+      visit(self, requestData);
     } else {
       console.log('No such action: ' + actionName);
       console.log('Available actions:');
@@ -69,26 +76,25 @@ var siren = {
     }
   },
 
+  "void" : function() {
+    visit(this, 'http://localhost:3000/hywit/void');
+  },
+
   "go" : function(linkIndex) {
     // get url from linkIndex;
     var self = this;
-    var link = self.body.links[linkIndex];
+    var link = self.siren.links[linkIndex];
     var url = link.href;
-    return visit(this, url);
+    visit(this, url);
   },
 
   "follow" : function() {
     var self = this;
-    if (self.statusCode >= 300 && self.statusCode < 400) {
-      if (self.location) {
-        return visit(self, self.location);
-      }
-      console.log('No location header set.');
+    if (self.location) {
+      visit(self, self.location);
     }
-    else {
-      console.log("Not a redirect.");
-    }
+    console.log('No location header set.');
   }
 };
 
-//siren.to('http://localhost:3000/hywit/1337/sign');
+siren.to('http://localhost:3000/hywit/1337/sign');
