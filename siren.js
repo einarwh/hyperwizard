@@ -50,7 +50,7 @@ var visit = function(self, url) {
 
 var findAction = function(self, actionName) {
   if (self.actions) {
-    for (var i=0, len = self.actions.length; i < len; i++) {
+    for (var i = 0, len = self.actions.length; i < len; i++) {
       var a = self.actions[i];
       if (a.name === actionName) {
         return a;
@@ -60,6 +60,13 @@ var findAction = function(self, actionName) {
   return undefined;
 };
 
+var lookupAction = function(self, actionId) {
+  if (typeof actionId === 'number') {
+    return self.actions[actionId];
+  }
+  return findAction(self, actionId);
+};
+
 var siren = {
 
   "to" : function(url) {
@@ -67,20 +74,14 @@ var siren = {
   },
 
   "action": function(actionName) {
-    return findAction(this, actionName);
+    return lookupAction(this, actionName);
   },
 
   "do" : function(actionName, formData) {
     var self = this;
-    
+
     // get url from action-name.
-    var a = null;
-    if (typeof actionName === 'number') {
-      a = self.actions[actionName];
-    }
-    else {
-      a = findAction(this, actionName);
-    }
+    var a = lookupAction(self, actionName);
 
     if (a) {
       var requestData = {

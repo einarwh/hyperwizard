@@ -210,7 +210,6 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   console.log("Book: " + book_id);
   var siren;
   if (book_id === 3) {
-    console.log("Good ending!");
     siren = { 
       "class": [ "location" ],
       "properties": { 
@@ -225,7 +224,6 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
     res.status(200).send(JSON.stringify(siren));
   }
   else if (book_id === 1 || book_id === 2) {
-    console.log("Bad ending!");
     siren = { "class": [ "location" ],
       "properties": { 
         "name": book_name(book_id), 
