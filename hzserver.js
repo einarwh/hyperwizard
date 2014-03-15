@@ -11,6 +11,18 @@ String.prototype.reverse = function () {
 
 var adventures = {};
 
+function book_name(index) {
+  if (index === 1) {
+    return "Plain JSON REST APIs for fun and profit";
+  }
+  if (index === 2) {
+    return "Level 2 REST FTW"
+  }
+  if (index === 3) {
+    return "No REST till Hypermedia!"
+  }
+}
+
 function init_state(adv_id) {
   var mirrors = [1, 2, 3, 4, 5, 6, 7];
   var unbreakable = Math.floor((Math.random()*mirrors.length)+1); 
@@ -40,19 +52,6 @@ function s4() {
              .toString(16)
              .substring(1);
 }
-
-app.get('/odysseus', function(req, res) {
-  console.log(__dirname);
-  res.sendfile(__dirname + '/odysseus.html');
-});
-
-app.post('/odysseus', function(req, res) {
-  var entrypoint = req.body.entrypoint;
-  console.log("Entrypoint: " + entrypoint);
-  //res.send("Hello: " + entrypoint);
-  console.log(__dirname);
-  res.sendfile(__dirname + '/placeholder.html');
-});
 
 app.get('/hywit/void', function(req, res){
 	var siren = { "class": [ "location" ],
@@ -89,10 +88,10 @@ app.get('/hywit/:adv_id/hill', function(req, res){
     return;
   }
 
-  console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
   var self_link = alink('hill');
   var siren = {
     "class": [ "location" ],
@@ -110,6 +109,22 @@ app.get('/hywit/:adv_id/hill', function(req, res){
   res.send(JSON.stringify(siren));
 });
 
+app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  res.status(418).location(alink('hall')).send();
+});
+
 app.get('/hywit/:adv_id/hall', function(req, res){
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
@@ -119,11 +134,10 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     return;
   }
   
-  console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
-  var self_link = alink('hill');
+  var self_link = alink('hall');
   var siren = {
     "class": [ "location" ],
     "properties": { 
@@ -151,26 +165,29 @@ app.get('/hywit/:adv_id/study', function(req, res){
     return;
   }
   
-  console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
   var self_link = alink('study');
+
+  var book_action = function(book_number) {
+    return { 
+      "name": "take-book-" + book_number, 
+      "title": "Take '" + book_name(book_number) + "'", 
+      "method": "POST",
+      "href": alink("study/books/" + book_number) 
+    };
+  }
+
   var siren = { "class": [ "location" ],
     "properties": { 
       "name": "The Wizard’s Study", 
       "description": "You have entered the Wizard’s Study. Luckily, the Wizard is not in, or he would surely have deleted you. This means that you have conquered the Wizard’s Tower. Congratulations! You may pick a prize, by choosing a book from the Wizard’s shelf. Choose wisely."
     },
     "actions": [ 
-      { "name": "take-first-book", 
-        "title": "Take 'Plain JSON REST APIs’", "method": "POST",
-        "href": alink("study/books/1") },
-      { "name": "take-second-book", 
-        "title": "Take 'Level 2 REST from outer space'", "method": "POST",
-        "href": alink("study/books/2") },
-      { "name": "take-third-book", 
-        "title": "Take 'No REST till Hypermedia!'", "method": "POST",
-        "href": alink("study/books/3") }
+      book_action(1),
+      book_action(2),
+      book_action(3)
     ],
     "links": [
       { "rel": [ "self" ], "href": self_link } 
@@ -191,33 +208,90 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   }
 
   var book_id = parseInt(req.params.book_id, 10);
+  console.log("Book: " + book_id);
   var siren;
   if (book_id === 3) {
-    console.log("All is well.");
-    siren = { "class": [ "location" ],
+    console.log("Good ending!");
+    siren = { 
+      "class": [ "location" ],
       "properties": { 
-        "name": "No REST till Hypermedia!", 
-        "description": "That's right. You may return to The Magical Void with your prize."
+        "name": book_name(book_id), 
+        "description": "Well done. You may return to The Magical Void with your prize."
       },
       "links": [
         { "rel": [ "return" ], "href": hylink('void') } 
       ]
     };
+    res.contentType("application/vnd.siren+json");
     res.status(200).send(JSON.stringify(siren));
   }
   else if (book_id === 1 || book_id === 2) {
+    console.log("Bad ending!");
     siren = { "class": [ "location" ],
       "properties": { 
-        "name": "Bad ending!", 
+        "name": book_name(book_id), 
         "description": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
       }
     };
+    res.contentType("application/vnd.siren+json");
     res.status(200).send(JSON.stringify(siren));
   }
   else {
-    console.log("Unacceptable book id " + book_id);
     res.status(400).send();
+    return;
   }
+});
+
+app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+  var mirror = parseInt(req.params.mirror, 10);
+  console.log('look into mirror ' + mirror);
+
+  if ('undefined' === typeof adv_state) {
+    console.log('no state');
+    res.status(404).send();
+    return;
+  } 
+
+  if (adv_state.mirrors.indexOf(mirror) < 0) {
+    console.log('doesnt exist ' + mirror);
+    if (adv_state.broken_mirrors.indexOf(mirror) < 0) {
+      console.log('never existed ' + mirror);
+      res.status(404).send();
+    }
+    else {
+      console.log('broken');
+      res.status(410).send();
+    }
+    return;
+  } 
+
+  desc = "You see a reflection of yourself.";
+
+  if (mirror === adv_state.unbreakable) {
+    desc = "You see a reflection of yourself, upside-down.";
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var self_link = alink('mirrors/' + mirror);
+
+  var siren = { "class": [ "location" ],
+    "properties": { 
+      "name": "Mirror #" + mirror, 
+      "description": desc
+    },
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "previous" ], "href": alink('mirrors') } 
+    ]
+  };
+
+  res.contentType("application/vnd.siren+json");
+  res.send(JSON.stringify(siren));
 });
 
 app.get('/hywit/:adv_id/mirrors', function(req, res){
@@ -229,15 +303,15 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     return;
   }
   
-  console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
-  var self_link = alink('hill');
+
+  var self_link = alink('mirrors');
   
   var smash_mirror = function (mirr) {
     return { 
-      "name": "smash-mirror",
+      "name": "smash-mirror-" + mirr,
       "title": "Smash the mirror!",
       "method": "DELETE",
       "href": alink("mirrors/" + mirr) 
@@ -252,20 +326,29 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     };
   };
 
-  var smash_actions = [];
+  var mirror_actions = [];
   var links = [];
 
   for (var i=0, len=adv_state.mirrors.length; i<len; i++)
   {
     var mrr = adv_state.mirrors[i];
-    if (mrr === adv_state.unbreakable) {
-      console.log("Cannot break " + mrr);
-    }
-    else {
-      smash_actions.push(smash_mirror(mrr));
+    if (mrr !== adv_state.unbreakable) {
+      mirror_actions.push(smash_mirror(mrr));
     }
     links.push(look_mirror(mrr));
   }
+
+  var desc = "You’re in a room of mirrors. You see infinite variations of yourself disappearing into the nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There’s a door to the north and to the west.";
+  if (mirror_actions.length == 0) {
+    desc = "You’re in a room with a single mirror. There’s a door to the north and to the west.";
+    var enter_action = { 
+      "name": "enter-mirror-" + adv_state.unbreakable,
+      "title": "Enter the mirror!",
+      "method": "POST",
+      "href": alink("mirrors/" + adv_state.unbreakable) 
+    }
+    mirror_actions.push(enter_action);
+  } 
 
   links.unshift(
     { "rel": [ "self" ], "href": self_link },
@@ -275,9 +358,9 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   var siren = { "class": [ "location" ],
     "properties": { 
       "name": "The Mirror Room", 
-      "description": "You’re in a room of mirrors. You see infinite variations of yourself disappearing into the nowhere. Somewhere in the distance you even see your own image upsides-down. It is rather confusing. There’s a door to the north and to the west."
+      "description": desc
     },
-    "actions": smash_actions,
+    "actions": mirror_actions,
     "links": links
   };
 
@@ -286,10 +369,8 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
 });
 
 app.post('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
-  console.log("enter mirror?");
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
-  console.log(adv_state);
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
@@ -314,7 +395,6 @@ app.post('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
 
 
 app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
-  console.log("delete?");
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
   var mirror = parseInt(req.params.mirror, 10);
@@ -346,7 +426,6 @@ app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
     adv_state.mirrors.splice(index, 1);
   }
 
-  console.log("deleted " + mirror);
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
@@ -384,8 +463,6 @@ app.get('/hywit/:adv_id/room', function(req, res){
     res.status(404).send();
     return;
   }
-
-  console.log(adv_state);
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
@@ -527,7 +604,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
         "description": "The skull shrieks 'Wrong answer', and the red glow in its eyes fades out. ",
       },
       "links": [
-        { "rel": [ "previous" ], "href": self_link }
+        { "rel": [ "previous" ], "href": alink('entrance') }
       ]
     };
 
@@ -543,7 +620,6 @@ app.put('/hywit/:adv_id/sign', function(req, res) {
   };
   var self_link = alink('sign');
   var orientation = req.body.orientation;
-  console.log(orientation);
 
   if (orientation === rtlOrientation || orientation === ltrOrientation) {
     // Legal value at least!
@@ -594,7 +670,6 @@ app.put('/hywit/:adv_id/sign', function(req, res) {
 });
 
 app.post('/hywit/void', function(req, res) {
-  console.log('hello');
   var adv_id = s4();
   adventures[adv_id] = init_state(adv_id);
   var url = hylink(adv_id + '/hill');

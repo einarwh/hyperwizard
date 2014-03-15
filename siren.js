@@ -1,4 +1,13 @@
 var request = require('request');
+var http = require('http');
+
+var httpStatus = {
+  '200': 'OK',
+  '201': 'CREATED',
+  '204': 'NO CONTENT',
+  '302': 'FOUND',
+  '304': 'NOT MODIFIED'
+}
 
 var visit = function(self, url) {
   console.log(url);
@@ -8,12 +17,29 @@ var visit = function(self, url) {
       return;
     }
 
-    self.where = url;
-    self.at = url;
+    if (typeof url === 'string') {
+      self.request = { uri: url };
+      self.at = url;
+    }
+    else {
+      self.request = url;
+      self.at = url.uri;
+    }
+    self.where = self.at;
+
     self.statusCode = response.statusCode;
+    self.statusName = http.STATUS_CODES[response.statusCode];
+    self.status = self.statusCode + " " + self.statusName;
+    console.log(self.status);
+
     self.headers = response.headers;
-    self.location = response.headers.location;
-    if (body.length > 0) {
+    self.location = response.headers.location; 
+    if (self.location) {
+      console.log("Location: " + self.location);
+    }
+
+    self.body = body;
+    if (body.length > 0 && "application/vnd.siren+json" === response.headers["content-type"]) {
       self.siren = JSON.parse(body);
       self.properties = self.siren.properties;
       self.actions = self.siren.actions;
@@ -25,15 +51,20 @@ var visit = function(self, url) {
       self.actions = undefined;
       self.links = undefined;
     }
-    console.log(".");
+    self.all = self.siren
+    self.what = self.siren
+
+    //console.log(".");
   });
 };
 
 var findAction = function(self, actionName) {
-  for (var i=0, len = self.actions.length; i < len; i++) {
-    var a = self.actions[i];
-    if (a.name === actionName) {
-      return a;
+  if (self.actions) {
+    for (var i=0, len = self.actions.length; i < len; i++) {
+      var a = self.actions[i];
+      if (a.name === actionName) {
+        return a;
+      }
     }
   }
   return undefined;
@@ -80,6 +111,10 @@ var siren = {
     visit(this, 'http://localhost:3000/hywit/void');
   },
 
+  "study" : function() {
+    visit(this, 'http://localhost:3000/hywit/1337/study');
+  },
+
   "go" : function(linkIndex) {
     // get url from linkIndex;
     var self = this;
@@ -93,7 +128,9 @@ var siren = {
     if (self.location) {
       visit(self, self.location);
     }
-    console.log('No location header set.');
+    else {
+      console.log('No location header set.');
+    }
   }
 };
 
