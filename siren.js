@@ -1,14 +1,6 @@
 var request = require('request');
 var http = require('http');
 
-var httpStatus = {
-  '200': 'OK',
-  '201': 'CREATED',
-  '204': 'NO CONTENT',
-  '302': 'FOUND',
-  '304': 'NOT MODIFIED'
-}
-
 var visit = function(self, url) {
   console.log(url);
   request(url, function(error, response, body) {
@@ -51,10 +43,8 @@ var visit = function(self, url) {
       self.actions = undefined;
       self.links = undefined;
     }
-    self.all = self.siren
-    self.what = self.siren
-
-    //console.log(".");
+    self.all = self.siren;
+    self.what = self.siren;
   });
 };
 
@@ -82,9 +72,7 @@ var siren = {
 
   "do" : function(actionName, formData) {
     var self = this;
-
-    console.log(typeof actionName)
-
+    
     // get url from action-name.
     var a = null;
     if (typeof actionName === 'number') {
@@ -142,5 +130,3 @@ var siren = {
     }
   }
 };
-
-siren.to('http://localhost:3000/hywit/1337/sign');

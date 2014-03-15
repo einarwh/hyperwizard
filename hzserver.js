@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
 
-//app.use(express.bodyParser());
 app.use(express.urlencoded());
 app.use(express.json());
 
@@ -16,10 +15,10 @@ function book_name(index) {
     return "Plain JSON REST APIs for fun and profit";
   }
   if (index === 2) {
-    return "Level 2 REST FTW"
+    return "Level 2 REST FTW";
   }
   if (index === 3) {
-    return "No REST till Hypermedia!"
+    return "No REST till Hypermedia!";
   }
 }
 
@@ -177,7 +176,7 @@ app.get('/hywit/:adv_id/study', function(req, res){
       "method": "POST",
       "href": alink("study/books/" + book_number) 
     };
-  }
+  };
 
   var siren = { "class": [ "location" ],
     "properties": { 
@@ -262,7 +261,7 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
     return;
   } 
 
-  desc = "You see a reflection of yourself.";
+  var desc = "You see a reflection of yourself.";
 
   if (mirror === adv_state.unbreakable) {
     desc = "You see a reflection of yourself, upside-down.";
@@ -334,14 +333,14 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   }
 
   var desc = "You’re in a room of mirrors. You see infinite variations of yourself disappearing into the nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There’s a door to the north and to the west.";
-  if (mirror_actions.length == 0) {
+  if (mirror_actions.length === 0) {
     desc = "You’re in a room with a single mirror. There’s a door to the north and to the west.";
     var enter_action = { 
       "name": "enter-mirror-" + adv_state.unbreakable,
       "title": "Enter the mirror!",
       "method": "POST",
       "href": alink("mirrors/" + adv_state.unbreakable) 
-    }
+    };
     mirror_actions.push(enter_action);
   } 
 
@@ -585,8 +584,8 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+  
   var master = req.body.master;
-  var self_link = alink('tower');
 
   if ("Edsger" === master) {
     res.status(302).location(alink('hall')).send();
