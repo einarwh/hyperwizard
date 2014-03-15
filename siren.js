@@ -82,8 +82,17 @@ var siren = {
 
   "do" : function(actionName, formData) {
     var self = this;
+
+    console.log(typeof actionName)
+
     // get url from action-name.
-    var a = findAction(this, actionName);
+    var a = null;
+    if (typeof actionName === 'number') {
+      a = self.actions[actionName];
+    }
+    else {
+      a = findAction(this, actionName);
+    }
 
     if (a) {
       var requestData = {
