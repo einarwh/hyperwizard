@@ -2,12 +2,12 @@ var express = require('express');
 var app = express();
 
 //app.use(express.bodyParser());
-app.use(express.urlencoded())
-app.use(express.json())
+app.use(express.urlencoded());
+app.use(express.json());
 
 String.prototype.reverse = function () {
-    return this.split("").reverse().join("");
-}
+  return this.split("").reverse().join("");
+};
 
 var adventures = {};
 
@@ -20,7 +20,7 @@ function init_state(adv_id) {
     "broken_mirrors": [],
     "unbreakable": unbreakable,
     "room": false
-  }
+  };
 
   return state;
 }
@@ -39,7 +39,7 @@ function s4() {
   return Math.floor((1 + Math.random()) * 0x10000)
              .toString(16)
              .substring(1);
-};
+}
 
 app.get('/odysseus', function(req, res) {
   console.log(__dirname);
@@ -92,20 +92,20 @@ app.get('/hywit/:adv_id/hill', function(req, res){
   console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('hill');
   var siren = {
-  "class": [ "location" ],
-  "properties": { 
+    "class": [ "location" ],
+    "properties": { 
       "name": "The Green Hill", 
       "description": "You're on a grassy hill. Over yonder to the north, you see the outline of the Tower of the Mighty Unnamed Wizard. There's a faint clucking sound from a brook towards the east.",
-  },
-  "links": [
-    { "rel": [ "self" ], "href": self_link },
-    { "rel": [ "move", "east" ], "title": "Go east to the brook", "href": alink("brook") },
-    { "rel": [ "move", "north" ], "title": "Go north to the entrance", "href": alink("entrance") }  
-  ]
-};
+    },
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "east" ], "title": "Go east to the brook", "href": alink("brook") },
+      { "rel": [ "move", "north" ], "title": "Go north to the entrance", "href": alink("entrance") }  
+    ]
+  };
   res.contentType("application/vnd.siren+json");
   res.send(JSON.stringify(siren));
 });
@@ -122,7 +122,7 @@ app.get('/hywit/:adv_id/hall', function(req, res){
   console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('hill');
   var siren = {
     "class": [ "location" ],
@@ -154,7 +154,7 @@ app.get('/hywit/:adv_id/study', function(req, res){
   console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('study');
   var siren = { "class": [ "location" ],
     "properties": { 
@@ -191,9 +191,10 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   }
 
   var book_id = parseInt(req.params.book_id, 10);
+  var siren;
   if (book_id === 3) {
     console.log("All is well.");
-    var siren = { "class": [ "location" ],
+    siren = { "class": [ "location" ],
       "properties": { 
         "name": "No REST till Hypermedia!", 
         "description": "That's right. You may return to The Magical Void with your prize."
@@ -205,7 +206,7 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
     res.status(200).send(JSON.stringify(siren));
   }
   else if (book_id === 1 || book_id === 2) {
-    var siren = { "class": [ "location" ],
+    siren = { "class": [ "location" ],
       "properties": { 
         "name": "Bad ending!", 
         "description": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
@@ -231,7 +232,7 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   console.log(adventures[adv_id]);
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('hill');
   
   var smash_mirror = function (mirr) {
@@ -241,7 +242,7 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
       "method": "DELETE",
       "href": alink("mirrors/" + mirr) 
     };
-  }
+  };
 
   var look_mirror = function (mirr) {
     return { 
@@ -249,7 +250,7 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
       "title": "Look into the mirror.",
       "href": alink("mirrors/" + mirr) 
     };
-  }
+  };
 
   var smash_actions = [];
   var links = [];
@@ -292,7 +293,7 @@ app.post('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
 
   var mirror = parseInt(req.params.mirror, 10);
 
@@ -348,7 +349,7 @@ app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
   console.log("deleted " + mirror);
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
 
   res.status(204).location(alink('mirrors')).send();
 }); 
@@ -357,20 +358,20 @@ app.get('/hywit/:adv_id/brook', function(req, res){
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('brook');
   var siren = {
-  "class": [ "location" ],
-  "properties": { 
+    "class": [ "location" ],
+    "properties": { 
       "name": "The Merry Clucking Brook", 
       "description": "You’re next to a lovely brook. There’s a sign here. You see a grassy hill to the west.",
-  },
-  "links": [
-    { "rel": [ "self" ], "href": self_link },
-    { "rel": [ "move", "west" ], "href": alink("hill") },
-    { "rel": [ "look" ], "href": alink("sign") }
-  ]
-};
+    },
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "west" ], "href": alink("hill") },
+      { "rel": [ "look" ], "href": alink("sign") }
+    ]
+  };
   res.contentType("application/vnd.siren+json");
   res.send(JSON.stringify(siren));
 });
@@ -388,7 +389,7 @@ app.get('/hywit/:adv_id/room', function(req, res){
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('room');
 
   var siren = {
@@ -404,8 +405,8 @@ app.get('/hywit/:adv_id/room', function(req, res){
   };
 
   if (adv_state.room) {
-    siren["properties"]["description"] = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
-    siren["links"].push({ "rel": [ "move", "down" ], "href": alink("study") });
+    siren.properties.description = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
+    siren.links.push({ "rel": [ "move", "down" ], "href": alink("study") });
   }
 
   res.contentType("application/vnd.siren+json");
@@ -424,7 +425,7 @@ app.get('/hywit/:adv_id/sign', function(req, res){
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('sign');
   var signDesc = "The sign says '" + signText + "'.";
   var siren = {
@@ -458,7 +459,7 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('entrance');
   var siren = {
     "class": [ "location" ],
@@ -479,7 +480,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('tower');
   var siren = {
     "class": [ "challenge" ],
@@ -511,7 +512,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var master = req.body.master;
   var self_link = alink('tower');
 
@@ -539,7 +540,7 @@ app.put('/hywit/:adv_id/sign', function(req, res) {
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
-  }
+  };
   var self_link = alink('sign');
   var orientation = req.body.orientation;
   console.log(orientation);
