@@ -1,4 +1,4 @@
-siren.to('http://localhost:3000/hywiz/void')
+siren.to('http://localhost:3000/hywiz/void') -> void
 
 siren.all
 
@@ -6,21 +6,17 @@ siren.action('start-adventure')
 
 siren.do('start-adventure', { name: 'Foodoo', class: 'Burglar', race: 'Halfling', gender: 'Male' })
 
-siren.status
-
-siren.location
-
-siren.follow()
+siren.follow() -> hill
 
 siren.all
 
 siren.links
 
-siren.go(1)
+siren.go(1) -> brook
 
 siren.all
 
-siren.go(2)
+siren.go(2) -> sign
 
 siren.all
 
@@ -28,27 +24,23 @@ siren.action('turn-sign')
 
 siren.do('turn-sign', { orientation: 'Left-to-right' })
 
-siren.status
+siren.all
+
+siren.go(1) -> brook
 
 siren.all
 
-siren.go(1)
+siren.go(1) -> hill
 
 siren.all
 
-siren.go(1)
+siren.go(2) -> entrance
 
 siren.all
 
-siren.go(2)
+siren.go(1) -> tower
 
 siren.all
-
-siren.go(1)
-
-siren.all
-
-siren.status
 
 siren.action('answer-skull')
 
@@ -56,21 +48,83 @@ siren.do('answer-skull', { master: 'Quux' })
 
 siren.all
 
-siren.status
-
-siren.go(0);
+siren.go(0); -> entrance
 
 siren.all
 
-siren.go(1);
+siren.go(1); -> tower
 
 siren.all
 
 siren.do('answer-skull', { master: 'Edsger' })
 
-siren.follow()
+siren.follow() -> hall
 
-siren.
+siren.all
+
+siren.go(3) -> teapot
+
+siren.follow() -> hall
+
+siren.all
+
+siren.go(1) -> mirrors
+
+siren.all
+
+siren.properties
+
+siren.actions
+
+siren.links
+
+siren.links[1]
+
+siren.go(5) -> some mirror
+
+siren.go(1) -> mirrors
+
+siren.go(1) -> room
+
+siren.all
+
+siren.go(1) -> mirrors
+
+# Repeat until no smash-mirror actions left:
+
+siren.actions
+
+siren.action('smash-mirror-X')
+
+siren.follow() -> mirrors
+
+siren.all
+
+# Done
+
+siren.action('enter-mirror-Y');
+
+siren.follow() -> mirrors
+
+siren.all
+
+siren.go(3) -> mirror Y
+
+siren.all
+
+siren.go(1) -> mirrors
+
+siren.links
+
+siren.go(1) -> room
+
+siren.all
+
+siren.go(2) -> study
+
+siren.all
+
+# Please choose your final step carefully.
 
 
 

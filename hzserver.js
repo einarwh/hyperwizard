@@ -246,22 +246,17 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
   var mirror = parseInt(req.params.mirror, 10);
-  console.log('look into mirror ' + mirror);
 
   if ('undefined' === typeof adv_state) {
-    console.log('no state');
     res.status(404).send();
     return;
   } 
 
   if (adv_state.mirrors.indexOf(mirror) < 0) {
-    console.log('doesnt exist ' + mirror);
     if (adv_state.broken_mirrors.indexOf(mirror) < 0) {
-      console.log('never existed ' + mirror);
       res.status(404).send();
     }
     else {
-      console.log('broken');
       res.status(410).send();
     }
     return;
