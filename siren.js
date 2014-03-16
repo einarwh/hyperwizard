@@ -67,17 +67,16 @@ var lookupAction = function(self, actionId) {
   return findAction(self, actionId);
 };
 
-var siren = {
 
-  "to" : function(url) {
+exports.to = function(url) {
     visit(this, url);
-  },
+};
 
-  "action": function(actionName) {
+exports.action = function(actionName) {
     return lookupAction(this, actionName);
-  },
+};
 
-  "do" : function(actionName, formData) {
+exports.do = function(actionName, formData) {
     var self = this;
 
     // get url from action-name.
@@ -103,25 +102,25 @@ var siren = {
         console.log(self.actions[i]);
       }
     }
-  },
+};
 
-  "void" : function() {
+exports.void = function() {
     visit(this, 'http://localhost:3000/hywit/void');
-  },
+};
 
-  "study" : function() {
+exports.study = function() {
     visit(this, 'http://localhost:3000/hywit/1337/study');
-  },
+};
 
-  "go" : function(linkIndex) {
+exports.go = function(linkIndex) {
     // get url from linkIndex;
     var self = this;
     var link = self.siren.links[linkIndex];
     var url = link.href;
     visit(this, url);
-  },
+};
 
-  "follow" : function() {
+exports.follow = function() {
     var self = this;
     if (self.location) {
       visit(self, self.location);
@@ -129,5 +128,5 @@ var siren = {
     else {
       console.log('No location header set.');
     }
-  }
 };
+

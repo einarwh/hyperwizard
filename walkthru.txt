@@ -1,4 +1,4 @@
-siren.to('http://localhost:3000/hywiz/void') -> void
+siren.to('http://localhost:3000/hywit/void') -> void
 
 siren.all
 
