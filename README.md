@@ -4,11 +4,11 @@ To install dependencies type
 
 ```javascript
 npm install
-'''
+```
 
 Start the program with
 
 ```javascript
 node start.js
 > siren.void()
-'''
+```
