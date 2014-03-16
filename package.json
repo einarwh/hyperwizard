@@ -23,6 +23,7 @@
   "homepage": "https://github.com/bjartwolf/hyperwizard",
   "dependencies": {
     "express": "^3.4.8",
-    "request": "^2.34.0"
+    "request": "^2.34.0",
+    "prettyjson": "^0.13.0"
   }
 }
