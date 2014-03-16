@@ -1,5 +1,6 @@
 var request = require('request');
 var http = require('http');
+var prettyjson = require('prettyjson');
 
 var visit = function(self, url) {
   console.log(url);
@@ -99,7 +100,7 @@ exports.do = function(actionName, formData) {
       console.log('No such action: ' + actionName);
       console.log('Available actions:');
       for (var i = 0, len = self.actions.length; i < len; i++) {
-        console.log(self.actions[i]);
+        console.log(prettyjson.render(self.actions[i]));
       }
     }
 };
