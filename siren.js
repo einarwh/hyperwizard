@@ -70,7 +70,10 @@ exports.to = function(url) {
 };
 
 exports.action = function(actionName) {
-    return lookupAction(this, actionName);
+    var a = lookupAction(this, actionName);
+    if (a) {
+      print(a);
+    }
 };
 
 exports.do = function(actionName, formData) {
