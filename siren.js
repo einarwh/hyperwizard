@@ -19,7 +19,6 @@ var visit = function(self, url) {
       self.at = url.uri;
     }
     self.where = self.at;
-
     self.statusCode = response.statusCode;
     self.statusName = http.STATUS_CODES[response.statusCode];
     self.status = self.statusCode + " " + self.statusName;
@@ -34,25 +33,19 @@ var visit = function(self, url) {
     self.body = body;
     if (body.length > 0 && "application/vnd.siren+json" === response.headers["content-type"]) {
       self.siren = JSON.parse(body);
-      self.properties = self.siren.properties;
-      self.actions = self.siren.actions;
-      self.links = self.siren.links;
     }
     else {
       self.siren = "";
-      self.properties = undefined;
-      self.actions = undefined;
-      self.links = undefined;
     }
-    self.all = self.siren;
-    self.what = self.siren;
+    self.json = self.siren;
   });
 };
 
 var findAction = function(self, actionName) {
-  if (self.actions) {
-    for (var i = 0, len = self.actions.length; i < len; i++) {
-      var a = self.actions[i];
+  var acts = self.siren.actions;
+  if (acts) {
+    for (var i = 0, len = acts.length; i < len; i++) {
+      var a = acts[i];
       if (a.name === actionName) {
         return a;
       }
@@ -63,11 +56,14 @@ var findAction = function(self, actionName) {
 
 var lookupAction = function(self, actionId) {
   if (typeof actionId === 'number') {
-    return self.actions[actionId];
+    return self.siren.actions[actionId];
   }
   return findAction(self, actionId);
 };
 
+var print = function(json) {
+  console.log(prettyjson.render(json));
+}
 
 exports.to = function(url) {
     visit(this, url);
@@ -131,6 +127,22 @@ exports.follow = function() {
     }
 };
 
-exports.seeAll = function () {
-    console.log(prettyjson.render(this.all));
+exports.all = function () {
+  print(this.siren);
 };
+
+exports.what = function () {
+  print(this.siren);
+};
+
+exports.actions = function () {
+  print(this.siren.actions);
+};
+
+exports.links = function () {
+  print(this.siren.links);
+};
+
+exports.properties = function() {
+  print(this.siren.properties);
+}
