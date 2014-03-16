@@ -4,6 +4,8 @@ To install dependencies type
 ```javascript
 npm install
 
-Import siren with
-'''javascript
-var siren = require('./siren.js')
+
+Start the program with
+```javascript
+node start.js
+> siren.void()

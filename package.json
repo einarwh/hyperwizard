@@ -2,7 +2,7 @@
   "name": "hyperwizard",
   "version": "0.0.0",
   "description": "Siren, hypermedia and wizards",
-  "main": "hzserver.js",
+  "main": "start.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
