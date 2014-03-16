@@ -131,3 +131,6 @@ exports.follow = function() {
     }
 };
 
+exports.seeAll = function () {
+    console.log(prettyjson.render(this.all));
+};
