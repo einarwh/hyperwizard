@@ -133,6 +133,20 @@ exports.to = function(url) {
     visit(this, url);
 };
 
+exports.help = function(url) {
+  var hlp = {
+    "game.help()": "Prints this help.",
+    "game.at()": "Where you are.",
+    "game.all()": "What it looks like.",
+    "game.actions()": "Things to do.",
+    "game.do(action, json)": "To do things.",
+    "game.links()": "Where to go.",
+    "game.go(link-no)": "To go somewhere.",
+    "game.follow()": "To follow a link header"
+  };
+  neat(hlp);
+};
+
 exports.action = function(actionName) {
     var a = lookupAction(this, actionName);
     if (a) {

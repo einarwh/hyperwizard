@@ -13,6 +13,12 @@ node start.js
 > game.void()
 ```
 
+Help?
+
+```javascript
+> game.help()
+```
+
 Where you are?
 
 ```javascript
