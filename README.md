@@ -22,7 +22,7 @@ Help?
 Where you are?
 
 ```javascript
-> game.at()
+> game.at
 ```
 
 What it looks like there?

@@ -136,7 +136,7 @@ exports.to = function(url) {
 exports.help = function(url) {
   var hlp = {
     "game.help()": "Prints this help.",
-    "game.at()": "Where you are.",
+    "game.at": "Where you are.",
     "game.all()": "What it looks like.",
     "game.actions()": "Things to do.",
     "game.do(action, json)": "To do things.",
