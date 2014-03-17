@@ -1,128 +1,128 @@
-siren.to('http://localhost:3000/hywit/void') -> void
+game.to('http://localhost:3000/hywit/void') -> void
 
-siren.all
+game.all
 
-siren.action('start-adventure')
+game.action('start-adventure')
 
-siren.do('start-adventure', { name: 'Foodoo', class: 'Burglar', race: 'Halfling', gender: 'Male' })
+game.do('start-adventure', { name: 'Foodoo', class: 'Burglar', race: 'Halfling', gender: 'Male' })
 
-siren.follow() -> hill
+game.follow() -> hill
 
-siren.all
+game.all
 
-siren.links
+game.links
 
-siren.go(1) -> brook
+game.go(1) -> brook
 
-siren.all
+game.all
 
-siren.go(2) -> sign
+game.go(2) -> sign
 
-siren.all
+game.all
 
-siren.action('turn-sign')
+game.action('turn-sign')
 
-siren.do('turn-sign', { orientation: 'Left-to-right' })
+game.do('turn-sign', { orientation: 'Left-to-right' })
 
-siren.all
+game.all
 
-siren.go(1) -> brook
+game.go(1) -> brook
 
-siren.all
+game.all
 
-siren.go(1) -> hill
+game.go(1) -> hill
 
-siren.all
+game.all
 
-siren.go(2) -> entrance
+game.go(2) -> entrance
 
-siren.all
+game.all
 
-siren.go(1) -> tower
+game.go(1) -> tower
 
-siren.all
+game.all
 
-siren.action('answer-skull')
+game.action('answer-skull')
 
-siren.do('answer-skull', { master: 'Quux' })
+game.do('answer-skull', { master: 'Quux' })
 
-siren.all
+game.all
 
-siren.go(0); -> entrance
+game.go(0); -> entrance
 
-siren.all
+game.all
 
-siren.go(1); -> tower
+game.go(1); -> tower
 
-siren.all
+game.all
 
-siren.do('answer-skull', { master: 'Edsger' })
+game.do('answer-skull', { master: 'Edsger' })
 
-siren.follow() -> hall
+game.follow() -> hall
 
-siren.all
+game.all
 
-siren.go(3) -> teapot
+game.go(3) -> teapot
 
-siren.follow() -> hall
+game.follow() -> hall
 
-siren.all
+game.all
 
-siren.go(1) -> mirrors
+game.go(1) -> mirrors
 
-siren.all
+game.all
 
-siren.properties
+game.properties
 
-siren.actions
+game.actions
 
-siren.links
+game.links
 
-siren.links[1]
+game.links[1]
 
-siren.go(5) -> some mirror
+game.go(5) -> some mirror
 
-siren.go(1) -> mirrors
+game.go(1) -> mirrors
 
-siren.go(1) -> room
+game.go(1) -> room
 
-siren.all
+game.all
 
-siren.go(1) -> mirrors
+game.go(1) -> mirrors
 
 # Repeat until no smash-mirror actions left:
 
-siren.actions
+game.actions
 
-siren.action('smash-mirror-X')
+game.action('smash-mirror-X')
 
-siren.follow() -> mirrors
+game.follow() -> mirrors
 
-siren.all
+game.all
 
 # Done
 
-siren.action('enter-mirror-Y');
+game.action('enter-mirror-Y');
 
-siren.follow() -> mirrors
+game.follow() -> mirrors
 
-siren.all
+game.all
 
-siren.go(3) -> mirror Y
+game.go(3) -> mirror Y
 
-siren.all
+game.all
 
-siren.go(1) -> mirrors
+game.go(1) -> mirrors
 
-siren.links
+game.links
 
-siren.go(1) -> room
+game.go(1) -> room
 
-siren.all
+game.all
 
-siren.go(2) -> study
+game.go(2) -> study
 
-siren.all
+game.all
 
 # Please choose your final step carefully.
 
