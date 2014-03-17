@@ -8,19 +8,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bjartwolf/hyperwizard.git"
+    "url": "https://github.com/einarwh/hyperwizard.git"
   },
   "keywords": [
     "siren",
     "hypermedia",
     "wizard"
   ],
-  "author": "Einar Høst",
+  "author": "Einar W. Høst",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/bjartwolf/hyperwizard/issues"
+    "url": "https://github.com/einarwh/hyperwizard/issues"
   },
-  "homepage": "https://github.com/bjartwolf/hyperwizard",
+  "homepage": "https://github.com/einarwh/hyperwizard",
   "dependencies": {
     "express": "^3.4.8",
     "request": "^2.34.0",
