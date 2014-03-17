@@ -2,12 +2,12 @@ var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
 
-var history = {};
+var mem = {};
 
 var visit = function(self, url) {
   var opt = null;
   if (typeof url === 'string') {
-    opt = { uri: url }
+    opt = { uri: url };
   }
   else {
     opt = url;
@@ -24,21 +24,21 @@ var visit = function(self, url) {
   };
   reqInfo.accept = opt.headers.accept;
 
-  if (history[opt.uri] && requestMethod === 'GET') {
-    opt.headers["If-None-Match"] = history[opt.uri].etag;
-    reqInfo["if-none-match"] = history[opt.uri].etag;
+  if (mem[opt.uri] && requestMethod === 'GET') {
+    opt.headers["If-None-Match"] = mem[opt.uri].etag;
+    reqInfo["if-none-match"] = mem[opt.uri].etag;
   }
 
   if (opt.form) {
     reqInfo.form = opt.form;
   }
 
-  print({ request: reqInfo});
+  neat({ request: reqInfo});
 
   request(opt, function(error, response, body) {
     if (error) {
       resInfo.error = error;
-      print({ response: resInfo});
+      neat({ response: resInfo});
       return;
     }
 
@@ -57,7 +57,7 @@ var visit = function(self, url) {
 
     // TODO: obviously must also be GET request.
     if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {
-      history[self.at] = { 
+      mem[self.at] = { 
         etag: response.headers.etag,
         headers: response.headers,
         body: body
@@ -70,9 +70,9 @@ var visit = function(self, url) {
 
     var recall;
     
-    if (self.statusCode === 304 && history[self.at]) {
-      // Restore state from history.
-      recall = history[self.at];
+    if (self.statusCode === 304 && mem[self.at]) {
+      // Restore state from mem.
+      recall = mem[self.at];
       self.headers = recall.headers;
       self.location = recall.location;
       self.body = recall.body;
@@ -101,7 +101,7 @@ var visit = function(self, url) {
 
     self.json = self.siren;
 
-    print({ response: resInfo });
+    neat({ response: resInfo });
   });
 };
 
@@ -125,9 +125,9 @@ var lookupAction = function(self, actionId) {
   return findAction(self, actionId);
 };
 
-var print = function(json) {
+var neat = function(json) {
   console.log(prettyjson.render(json));
-}
+};
 
 exports.to = function(url) {
     visit(this, url);
@@ -136,7 +136,7 @@ exports.to = function(url) {
 exports.action = function(actionName) {
     var a = lookupAction(this, actionName);
     if (a) {
-      print(a);
+      neat(a);
     }
 };
 
@@ -195,21 +195,21 @@ exports.follow = function() {
 };
 
 exports.all = function () {
-  print(this.siren);
+  neat(this.siren);
 };
 
 exports.what = function () {
-  print(this.siren);
+  neat(this.siren);
 };
 
 exports.actions = function () {
-  print(this.siren.actions);
+  neat(this.siren.actions);
 };
 
 exports.links = function () {
-  print(this.siren.links);
+  neat(this.siren.links);
 };
 
 exports.properties = function() {
-  print(this.siren.properties);
-}
+  neat(this.siren.properties);
+};
