@@ -5,7 +5,6 @@ var prettyjson = require('prettyjson');
 var history = {};
 
 var visit = function(self, url) {
-  console.log(url);
   var opt = null;
   if (typeof url === 'string') {
     opt = { uri: url }
@@ -14,15 +13,32 @@ var visit = function(self, url) {
     opt = url;
   }
 
-  if (history[opt.uri]) {
-    opt.headers = { 
-      "If-None-Match": history[opt.uri].etag 
-    };
+  var reqInfo = {};
+  var resInfo = {};
+
+  var requestMethod = opt.method || "GET";
+  reqInfo.url = opt.uri;
+  reqInfo.method = requestMethod;
+  opt.headers = {
+    "Accept": "application/vnd.siren+json"
+  };
+  reqInfo.accept = opt.headers.accept;
+
+  if (history[opt.uri] && requestMethod === 'GET') {
+    opt.headers["If-None-Match"] = history[opt.uri].etag;
+    reqInfo["if-none-match"] = history[opt.uri].etag;
   }
+
+  if (opt.form) {
+    reqInfo.form = opt.form;
+  }
+
+  print({ request: reqInfo});
 
   request(opt, function(error, response, body) {
     if (error) {
-      console.log(error);
+      resInfo.error = error;
+      print({ response: resInfo});
       return;
     }
 
@@ -37,8 +53,10 @@ var visit = function(self, url) {
     self.where = self.at;
     self.statusCode = response.statusCode;
 
+    console.log(response.headers["content-type"]);
+
     // TODO: obviously must also be GET request.
-    if (response.headers.etag && self.statusCode >= 200 && self.statusCode < 300) {
+    if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {
       history[self.at] = { 
         etag: response.headers.etag,
         headers: response.headers,
@@ -48,7 +66,7 @@ var visit = function(self, url) {
 
     self.statusName = http.STATUS_CODES[response.statusCode];
     self.status = self.statusCode + " " + self.statusName;
-    console.log(self.status);
+    resInfo.status = self.status;
 
     var recall;
     
@@ -67,7 +85,11 @@ var visit = function(self, url) {
     }
 
     if (self.location) {
-      console.log("Location: " + self.location);
+      resInfo.location = self.location;
+    }
+
+    if (self.headers["content-type"]) {
+      resInfo["content-type"] = self.headers["content-type"];
     }
 
     if (self.body.length > 0 && "application/vnd.siren+json" === self.headers["content-type"]) {
@@ -78,6 +100,8 @@ var visit = function(self, url) {
     }
 
     self.json = self.siren;
+
+    print({ response: resInfo });
   });
 };
 
