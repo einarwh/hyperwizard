@@ -2,41 +2,81 @@ var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
 
+var history = {};
+
 var visit = function(self, url) {
   console.log(url);
-  request(url, function(error, response, body) {
+  var opt = null;
+  if (typeof url === 'string') {
+    opt = { uri: url }
+  }
+  else {
+    opt = url;
+  }
+
+  if (history[opt.uri]) {
+    opt.headers = { 
+      "If-None-Match": history[opt.uri].etag 
+    };
+  }
+
+  request(opt, function(error, response, body) {
     if (error) {
       console.log(error);
       return;
     }
 
-    if (typeof url === 'string') {
-      self.request = { uri: url };
-      self.at = url;
+    if (typeof opt === 'string') {
+      self.request = { uri: opt };
+      self.at = opt;
     }
     else {
-      self.request = url;
-      self.at = url.uri;
+      self.request = opt;
+      self.at = opt.uri;
     }
     self.where = self.at;
     self.statusCode = response.statusCode;
+
+    // TODO: obviously must also be GET request.
+    if (response.headers.etag && self.statusCode >= 200 && self.statusCode < 300) {
+      history[self.at] = { 
+        etag: response.headers.etag,
+        headers: response.headers,
+        body: body
+      };
+    }
+
     self.statusName = http.STATUS_CODES[response.statusCode];
     self.status = self.statusCode + " " + self.statusName;
     console.log(self.status);
 
-    self.headers = response.headers;
-    self.location = response.headers.location; 
+    var recall;
+    
+    if (self.statusCode === 304 && history[self.at]) {
+      // Restore state from history.
+      recall = history[self.at];
+      self.headers = recall.headers;
+      self.location = recall.location;
+      self.body = recall.body;
+
+    }
+    else {
+      self.headers = response.headers;
+      self.location = response.headers.location; 
+      self.body = body;
+    }
+
     if (self.location) {
       console.log("Location: " + self.location);
     }
 
-    self.body = body;
-    if (body.length > 0 && "application/vnd.siren+json" === response.headers["content-type"]) {
-      self.siren = JSON.parse(body);
+    if (self.body.length > 0 && "application/vnd.siren+json" === self.headers["content-type"]) {
+      self.siren = JSON.parse(self.body);
     }
     else {
       self.siren = "";
     }
+
     self.json = self.siren;
   });
 };
