@@ -12,6 +12,7 @@ var visit = function(self, url) {
   else {
     opt = url;
   }
+  opt.followRedirect = false;
 
   var reqInfo = {};
   var resInfo = {};
@@ -22,7 +23,7 @@ var visit = function(self, url) {
   opt.headers = {
     "Accept": "application/vnd.siren+json"
   };
-  reqInfo.accept = opt.headers.accept;
+  reqInfo.accept = opt.headers.Accept;
 
   if (mem[opt.uri] && requestMethod === 'GET') {
     opt.headers["If-None-Match"] = mem[opt.uri].etag;
@@ -53,7 +54,7 @@ var visit = function(self, url) {
     self.where = self.at;
     self.statusCode = response.statusCode;
 
-    console.log(response.headers["content-type"]);
+    //console.log(response.headers["content-type"]);
 
     // TODO: obviously must also be GET request.
     if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {

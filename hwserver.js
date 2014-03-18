@@ -30,7 +30,8 @@ function init_state(adv_id) {
     "mirrors": mirrors,
     "broken_mirrors": [],
     "unbreakable": unbreakable,
-    "room": false
+    "room": false,
+    "closed": true
   };
 
   return state;
@@ -121,6 +122,11 @@ app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
     return advlink(adv_id, relative);
   };
 
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
   res.status(418).location(alink('hall')).send();
 });
 
@@ -132,10 +138,16 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     res.status(404).send();
     return;
   }
-  
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+  
   var self_link = alink('hall');
   var siren = {
     "class": [ "location" ],
@@ -163,10 +175,16 @@ app.get('/hywit/:adv_id/study', function(req, res){
     res.status(404).send();
     return;
   }
-  
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+  
   var self_link = alink('study');
 
   var book_action = function(book_number) {
@@ -203,6 +221,15 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
 
   if ('undefined' === typeof adv_state) {
     res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
     return;
   }
 
@@ -249,6 +276,15 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
     return;
   } 
 
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
   if (adv_state.mirrors.indexOf(mirror) < 0) {
     if (adv_state.broken_mirrors.indexOf(mirror) < 0) {
       res.status(404).send();
@@ -264,10 +300,6 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
   if (mirror === adv_state.unbreakable) {
     desc = "You see a reflection of yourself, upside-down.";
   }
-
-  var alink = function (relative) {
-    return advlink(adv_id, relative);
-  };
 
   var self_link = alink('mirrors/' + mirror);
 
@@ -294,11 +326,16 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     res.status(404).send();
     return;
   }
-  
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
 
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+  
   var self_link = alink('mirrors');
   
   var smash_mirror = function (mirr) {
@@ -368,6 +405,11 @@ app.post('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
     return advlink(adv_id, relative);
   };
 
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
   var mirror = parseInt(req.params.mirror, 10);
 
   if ('undefined' === typeof adv_state) {
@@ -396,6 +438,15 @@ app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
     return;
   } 
 
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
   if (adv_state.mirrors.indexOf(mirror) < 0) {
     if (adv_state.broken_mirrors.indexOf(mirror) < 0) {
       res.status(404).send();
@@ -417,10 +468,6 @@ app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
   if (index > -1) {
     adv_state.mirrors.splice(index, 1);
   }
-
-  var alink = function (relative) {
-    return advlink(adv_id, relative);
-  };
 
   res.status(204).location(alink('mirrors')).send();
 }); 
@@ -459,6 +506,12 @@ app.get('/hywit/:adv_id/room', function(req, res){
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
   var self_link = alink('room');
 
   var siren = {
@@ -579,6 +632,13 @@ app.get('/hywit/:adv_id/tower', function(req, res){
 
 app.post('/hywit/:adv_id/tower', function(req, res) {
   var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+  
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
@@ -586,6 +646,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   var master = req.body.master;
 
   if ("Edsger" === master) {
+    adv_state.closed = false;
     res.status(302).location(alink('hall')).send();
   }
   else {
