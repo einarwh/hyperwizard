@@ -39,8 +39,23 @@ function init_state(adv_id) {
 
 adventures[1337] = init_state(1337);
 
+var port = process.env.PORT || 1337;
+
+var azure_url = 'http://hyperwizard.azurewebsites.net/hywit/';
+
+var local_url = 'http://localhost:' + port + '/hywit/';
+
+var use_local = true;
+
+function get_url() {
+  if (use_local) {
+    return local_url;
+  }
+  return azure_url;
+}
+
 function hylink(relative) {
-  return 'http://localhost:3000/hywit/' + relative;
+  return get_url() + relative;
 }
 
 function advlink(adv_id, relative) {
@@ -729,4 +744,4 @@ app.post('/hywit/void', function(req, res) {
   res.status(201).location(url).send();
 });
 
-app.listen(process.env.PORT || 1337);
+app.listen(port);

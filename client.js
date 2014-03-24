@@ -183,12 +183,16 @@ exports.do = function(actionName, formData) {
     }
 };
 
+exports.azure = function() {
+    visit(this, 'http://hyperwizard.azurewebsites.net/hywit/void');
+};
+
 exports.void = function() {
-    visit(this, 'http://localhost:3000/hywit/void');
+    visit(this, 'http://localhost:1337/hywit/void');
 };
 
 exports.study = function() {
-    visit(this, 'http://localhost:3000/hywit/1337/study');
+    visit(this, 'http://localhost:1337/hywit/1337/study');
 };
 
 exports.go = function(linkIndex) {
