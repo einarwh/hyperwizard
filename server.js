@@ -65,6 +65,11 @@ function s4() {
              .substring(1);
 }
 
+app.get('/', function(req, res) {
+  res.contentType("text/plain");
+  res.send("Visit http://github.com/einarwh/hyperwizard");
+});
+
 app.get('/hywit/void', function(req, res){
 	var siren = { "class": [ "location" ],
   "properties": { 
