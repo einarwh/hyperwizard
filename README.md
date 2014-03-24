@@ -6,11 +6,18 @@ To install dependencies type
 npm install
 ```
 
-Start the program with
+Start the program locally with
 
 ```javascript
 node start.js
 > game.void()
+```
+
+Alternatively, you can run the game server in the cloud with
+
+```javascript
+node run.js
+> game.azure()
 ```
 
 Help?
