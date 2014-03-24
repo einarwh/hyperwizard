@@ -27,6 +27,7 @@ function init_state(adv_id) {
   var unbreakable = Math.floor((Math.random()*mirrors.length)+1); 
   var state = {
     "id": adv_id,
+    "timestamp": new Date().getTime(),
     "mirrors": mirrors,
     "broken_mirrors": [],
     "unbreakable": unbreakable,
@@ -37,7 +38,9 @@ function init_state(adv_id) {
   return state;
 }
 
-adventures[1337] = init_state(1337);
+var permanent_aid = 1337;
+
+adventures[permanent_aid] = init_state(permanent_aid);
 
 var local_port = 1337;
 
@@ -741,6 +744,27 @@ app.put('/hywit/:adv_id/sign', function(req, res) {
 
 app.post('/hywit/void', function(req, res) {
   var adv_id = s4();
+  var ts = new Date().getTime();
+  var one_hour_in_millis = 60*60*1000;
+  var age_limit = 3 * one_hour_in_millis;
+  var existing_states = 0;
+  var max_existing_states = 20;
+
+  for (var aid in adventures)
+  {
+    ++existing_states;
+    var st = adventures[aid];
+    var age = ts - st.timestamp;
+    if (aid !== permanent_aid && age > age_limit) {
+      adventures[aid] = undefined;
+    }
+  }
+
+  if (existing_states >= max_existing_states) {
+    res.status(503).send();
+    return; 
+  }
+
   adventures[adv_id] = init_state(adv_id);
   var url = hylink(adv_id + '/hill');
   res.status(201).location(url).send();
