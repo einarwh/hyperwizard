@@ -1,0 +1,13 @@
+{
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Merry Clucking Brook", 
+      "description": "You’re next to a lovely brook. There’s a sign here. You see a grassy hill to the west and a cave to the east."
+    },
+    "links": [
+      { "rel": [ "self" ], "href": "self" },
+      { "rel": [ "move", "west" ], "title": "Go west to the hill.", "href": "hill" },
+      { "rel": [ "move", "east" ], "title": "Go east to cave.", "href": "cave" },
+      { "rel": [ "look" ], "title": "Read the sign.", "href": "sign" }
+    ]
+}

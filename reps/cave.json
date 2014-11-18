@@ -1,0 +1,11 @@
+{
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Colossal Cave", 
+      "description": "You're in The Colossal Cave, where others have found fortunes in treasure and gold, though it is rumored that some who enter are never seen again. It's pitch dark. You are too scared of being eaten by a grue to proceed further into the cave. LET'S GET OUT OF HERE!!!"
+   },
+    "links": [
+      { "rel": [ "self" ], "href": "self" },
+      { "rel": [ "move", "west" ], "title": "Go west to the brook", "href": "brook" }
+    ]
+}

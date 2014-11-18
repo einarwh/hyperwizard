@@ -4,7 +4,9 @@ var prettyjson = require('prettyjson');
 
 var mem = {};
 
-var visit = function(self, url) {
+var visit = function(self, url, accepts) {
+  var acceptsHeader = accepts || "application/vnd.siren+json";
+  
   var opt = null;
   if (typeof url === 'string') {
     opt = { uri: url };
@@ -21,7 +23,8 @@ var visit = function(self, url) {
   reqInfo.url = opt.uri;
   reqInfo.method = requestMethod;
   opt.headers = {
-    "Accept": "application/vnd.siren+json"
+    "Accept": acceptsHeader,
+    "Referer": self.at
   };
   reqInfo.accept = opt.headers.Accept;
 
@@ -39,6 +42,15 @@ var visit = function(self, url) {
   request(opt, function(error, response, body) {
     if (error) {
       resInfo.error = error;
+      neat({ response: resInfo});
+      return;
+    }
+
+    if (response.statusCode === 400 || response.statusCode === 404 || response.statusCode === 410) {
+      var statusName = http.STATUS_CODES[response.statusCode];
+      var statusSummary = response.statusCode + " " + statusName;
+      resInfo.status = statusSummary;
+      resInfo.etag = response.headers.etag;
       neat({ response: resInfo});
       return;
     }
@@ -67,7 +79,9 @@ var visit = function(self, url) {
 
     self.statusName = http.STATUS_CODES[response.statusCode];
     self.status = self.statusCode + " " + self.statusName;
+    self.etag = response.headers.etag;
     resInfo.status = self.status;
+    resInfo.etag = self.etag;
 
     var recall;
     
@@ -102,6 +116,11 @@ var visit = function(self, url) {
 
     self.json = self.siren;
 
+    if (self.body.length > 0 && "application/json" === self.headers["content-type"]) {
+      self.json = JSON.parse(self.body);
+      self.siren = "";
+    }
+
     neat({ response: resInfo });
   });
 };
@@ -130,8 +149,8 @@ var neat = function(json) {
   console.log(prettyjson.render(json));
 };
 
-exports.to = function(url) {
-    visit(this, url);
+exports.to = function(url, accepts) {
+    visit(this, url, accepts);
 };
 
 exports.help = function(url) {
@@ -175,10 +194,11 @@ exports.do = function(actionName, formData) {
       // includes: http method, request parameters.
       visit(self, requestData);
     } else {
+      var acts = self.siren.actions;
       console.log('No such action: ' + actionName);
-      console.log('Available actions:');
-      for (var i = 0, len = self.actions.length; i < len; i++) {
-        console.log(prettyjson.render(self.actions[i]));
+      console.log('Available actions [' + acts.length + ']:');
+      for (var i = 0, len = acts.length; i < len; i++) {
+        console.log(" - " + prettyjson.render(acts[i].name));
       }
     }
 };
@@ -187,18 +207,28 @@ exports.azure = function() {
     visit(this, 'http://hyperwizard.azurewebsites.net/hywit/void');
 };
 
-exports.void = function() {
-    visit(this, 'http://localhost:1337/hywit/void');
+exports.void = function(accepts) {
+    visit(this, 'http://localhost:1337/hywit/void', accepts);
 };
 
 exports.study = function() {
     visit(this, 'http://localhost:1337/hywit/1337/study');
 };
 
+function outOfBounds(links, linkIndex) {
+  var endIndex = links.length - 1;
+  var s = "Illegal link index " + linkIndex + " - must be between bounds [0, " + endIndex + "]";
+  console.log(s);
+}
+
 exports.go = function(linkIndex) {
     // get url from linkIndex;
     var self = this;
     var link = self.siren.links[linkIndex];
+    if (link === undefined) {
+      outOfBounds(self.siren.links, linkIndex);
+      return;
+    }
     var url = link.href;
     visit(this, url);
 };
@@ -214,11 +244,11 @@ exports.follow = function() {
 };
 
 exports.all = function () {
-  neat(this.siren);
+  neat(this.json);
 };
 
 exports.what = function () {
-  neat(this.siren);
+  neat(this.json);
 };
 
 exports.actions = function () {
@@ -232,3 +262,11 @@ exports.links = function () {
 exports.properties = function() {
   neat(this.siren.properties);
 };
+
+exports.look = function() {
+  neat(this.siren.properties);
+};
+
+exports.text = function() {
+  neat(this.body);
+}

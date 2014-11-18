@@ -1,0 +1,12 @@
+{
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Green Hill", 
+      "description": "You're on a grassy hill. Over yonder to the north, you see the outline of the Tower of the Mighty Unnamed Wizard. There's a faint clucking sound from a brook towards the east."
+    },
+    "links": [
+      { "rel": [ "self" ], "href": "self" },
+      { "rel": [ "move", "east" ], "title": "Go east to the brook", "href": "brook" },
+      { "rel": [ "move", "north" ], "title": "Go north to the entrance", "href": "entrance" }  
+    ]
+}
