@@ -141,8 +141,18 @@ function toHtml(srn) {
   var actions = srn.actions;
   var act;
   s += "<div>";
+  
+  
   s += '<p class="name">' + props.name + '</p>';
   s += '<p class="description">' + props.description + '</p>';
+  var keys = Object.keys(props);
+  for (var k = 0; k < keys.length; k++) {
+    var propname = keys[k];
+    if (propname !== 'name' && propname !== 'description') {
+      s += '<p class="' + propname + '">' + propname + ": " + props[propname] + '</p>';
+    }
+  }
+
   s += "</div>";
 
   if ('undefined' !== typeof links) {
@@ -190,6 +200,21 @@ function toResponse(req, res, siren, statusCode) {
   res.contentType(ct);
   res.status(sc).send(transform(siren));
 }
+
+function toJsonResponse(req, res, siren, statusCode) {
+  var sc = statusCode || 200;
+  var ct = "application/json";
+  var transform = JSON.stringify;
+
+  if (acceptsHtml(req)) {
+    ct = "text/html";
+    transform = toHtml;
+  }
+
+  res.contentType(ct);
+  res.status(sc).send(transform(siren));
+}
+
 
 app.get('/', function(req, res) {
   res.contentType("text/plain");
@@ -451,14 +476,12 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
     toResponse(req, res, siren);
   }
   else if (book_id === 1 || book_id === 2) {
-    siren = { "class": [ "location" ],
-      "properties": { 
-        "name": book_name(book_id), 
-        "description": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
-      }
+    var plainJson = { 
+      "book": book_name(book_id), 
+      "text": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
     };
 
-    toResponse(req, res, siren);
+    toJsonResponse(req, res, plainJson);
   }
   else {
     res.status(400).send();
