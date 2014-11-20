@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var fs = require('fs');
 
+app.use('/fudd', express.static(__dirname + '/fudd'));
 app.use(express.urlencoded());
 app.use(express.json());
 
@@ -117,6 +118,17 @@ function toActionForm(act) {
   
   s += "<p>" + act.title + '</p>';
   s += '<form action="' + act.href + '" method="' + httpMethod + '">';
+  
+  if ('undefined' === typeof act.method) {
+    s += '<select name="httpmethod">';
+    s += '<option value="GET">GET</option>';
+    s += '<option value="POST">POST</option>';
+    s += '<option value="PUT">PUT</option>';
+    s += '<option value="DELETE">DELETE</option>';
+    s += '<option value="PATCH">PATCH</option>';
+    s += '</select>';
+  }
+
   if ('undefined' !== typeof act.fields) {
     for (var i = 0, len = act.fields.length; i < len; i++) {
       field = act.fields[i]; 
@@ -140,8 +152,16 @@ function toHtml(srn) {
   var alink;
   var actions = srn.actions;
   var act;
+
+  s += "<!DOCTYPE html>";
+  s += "<html>";
+  s += "<head>";
+  s += "<title>Hypermedia in the Wizard's Tower</title>";
+  s += '<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">';
+  s += "</head>";
+
+  s += "<body>";
   s += "<div>";
-  
   
   s += '<p class="name">' + props.name + '</p>';
   s += '<p class="description">' + props.description + '</p>';
@@ -169,7 +189,6 @@ function toHtml(srn) {
     s += '</div>';
   }
 
-
   if ('undefined' !== typeof actions) {
     s += '<div class="actions">';
     s += '<p>Things to do:</p>'
@@ -183,6 +202,9 @@ function toHtml(srn) {
     s += '</ul>';
     s += '</div>';
   }
+
+  s += "</body>";
+  s += "</html>";
 
   return s;
 }
@@ -326,71 +348,74 @@ app.get('/hywit/:adv_id/hall', function(req, res){
   toResponse(req, res, siren);
 });
 
-function killGrue(req, res) {
-  var adv_id = req.params.adv_id;
-  var adv_state = adventures[adv_id];
-
-  if ('undefined' === typeof adv_state) {
-    res.status(404).send();
-    return;
-  }
-
-  var alink = function (relative) {
-    return advlink(adv_id, relative);
-  };
-
-  adv_state.grue = "dead";
-
-  res.status(204).location(alink('brook')).send();
-}
-
-app.post('/hywit/:adv_id/grue', function(req, res) {
-  killGrue(req, res);
-});
-
-app.delete('/hywit/:adv_id/grue', function(req, res) {
-  killGrue(req, res);
-});
-
 app.get('/hywit/:adv_id/grue', function(req, res) {
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
-
   if ('undefined' === typeof adv_state) {
     res.status(404).send();
     return;
   }
-
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
-
   if (undefined === adv_state.grue) {
-    var self_link = alink('grue');
-
-    var act = { 
-      "name": "kill-grue", 
-      "title": "Light a handy torch lying nearby.", 
-      "method": "DELETE",
-      "href": self_link
+    var act = {
+      "name": "kill-grue",
+      "title": "Light a handy torch lying nearby.",
+      "href": alink('gruesome')
     }
-
-    var siren = { "class": [ "location" ],
-      "properties": { 
-        "name": "A terrifying grue.", 
+    var siren = {
+      "class": [ "location" ],
+      "properties": {
+        "name": "A terrifying grue.",
         "description": "Uh-oh. A terrifying grue has appeared in front of you. This could be fatal, unless you know your HTTP methods."
       },
-      "actions": [ act ],
-      "links": [
-        { "rel": [ "self" ], "href": self_link },
-        { "rel": [ "move" ], "href": alink('cave') }
-      ]
+      "actions": [ act ]
     };
-
     toResponse(req, res, siren);
   } else {
     res.status(410).send("The grue has vanished permanently.");
   }
+});
+
+function killGrue(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+  adv_state.grue = "dead";
+  res.status(204).location(alink('brook')).send();
+}
+
+function eatenByGrue(res) {
+  res.status(405).send("You've been eaten by a grue.");  
+}
+
+app.post('/hywit/:adv_id/gruesome', function(req, res) {
+  var verb = req.body.httpmethod;
+  if (verb === 'DELETE') {
+    killGrue(req, res);
+    return;
+  }
+ 
+  eatenByGrue(res);
+});
+
+app.get('/hywit/:adv_id/gruesome', function(req, res) { 
+  eatenByGrue(res);
+});
+
+app.patch('/hywit/:adv_id/gruesome', function(req, res) { 
+  eatenByGrue(res);
+});
+
+app.delete('/hywit/:adv_id/gruesome', function(req, res) {
+  killGrue(req, res);
 });
 
 app.get('/hywit/:adv_id/study', function(req, res) {
@@ -1007,8 +1032,13 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
 
   if (resource === 'brook') {
 
-    if (req.headers.referer !== undefined) {
-      if (req.headers.referer.endsWith('cave')) {
+    var referer = req.headers['x-alt-referer'];
+    if ('undefined' === typeof referer) {
+      referer = req.headers.referer;
+    } 
+
+    if (referer !== undefined) {
+      if (referer.endsWith('cave')) {
         if (undefined === adv_state.grue) {
           res.status(302).location(alink('grue')).send();
           return;

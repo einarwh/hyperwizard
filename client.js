@@ -24,8 +24,10 @@ var visit = function(self, url, accepts) {
   reqInfo.method = requestMethod;
   opt.headers = {
     "Accept": acceptsHeader,
-    "Referer": self.at
+    "Referer": self.at,
+    "X-Alt-Referer": self.at
   };
+
   reqInfo.accept = opt.headers.Accept;
 
   if (mem[opt.uri] && requestMethod === 'GET') {
@@ -50,7 +52,7 @@ var visit = function(self, url, accepts) {
       var statusName = http.STATUS_CODES[response.statusCode];
       var statusSummary = response.statusCode + " " + statusName;
       resInfo.status = statusSummary;
-      resInfo.etag = response.headers.etag;
+      // resInfo.etag = response.headers.etag;
       neat({ response: resInfo});
       return;
     }
@@ -186,9 +188,22 @@ exports.do = function(actionName, formData) {
         method: a.method || "GET"
       };
 
-      if (formData) {
-        requestData.form = formData;
+      var defaultMethod = "GET";
+
+      var requestData = {
+        uri: a.href,
+      };
+
+      if ('undefined' !== typeof formData) {
+        if (typeof formData === 'string') {
+          defaultMethod = formData;
+        }
+        else {
+          requestData.form = formData;
+        }
       }
+
+      requestData.method = a.method || defaultMethod;
       
       // also: whatever else necessary to make proper request.
       // includes: http method, request parameters.
