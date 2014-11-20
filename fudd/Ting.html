@@ -1,0 +1,58 @@
+<html>
+
+<head>
+  <title>Ting</title>
+  <script src="resources/elm-runtime.js"></script>
+  <script src="build/Graphecs.js"></script>
+  <script src="build/Ting.js"></script>
+</head>
+
+<body/>
+
+<script type="text/javascript">
+    var ting = Elm.fullscreen(Elm.Ting, {inn: null});
+
+    function parseResponseHeaders(headerStr) {
+        var headers = [];
+        if (!headerStr) return headers;
+        var headerPairs = headerStr.split('\u000d\u000a');
+        for (var i = 0; i < headerPairs.length; i++) {
+            var headerPair = headerPairs[i];
+            var index = headerPair.indexOf('\u003a\u0020');
+            if (index > 0) {
+                var key = headerPair.substring(0, index);
+                var val = headerPair.substring(index + 2);
+                headers.push([key, val]);
+            }
+        }
+        return headers;
+    }
+
+    function thingety(req) {
+        if (!req) {
+            ting.ports.inn.send(null);
+            return;
+        }
+        ting.ports.inn.send([req, null]);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open(req.verb, req.url, true);
+
+        for (var i = 0; i < req.headers.length; i++) {
+            var headerPair = req.headers[i];
+            xhr.setRequestHeader(headerPair[0], headerPair[1]);
+        }
+        xhr.onload = function(){
+            ting.ports.inn.send([req,
+                                 {url: xhr.responseURL,
+                                  body: xhr.responseText,
+                                  status: xhr.status,
+                                  statusText: xhr.statusText,
+                                  headers : parseResponseHeaders(xhr.getAllResponseHeaders())}]);
+        }
+        xhr.send(req.body);
+    }
+
+    ting.ports.out.subscribe(thingety);
+</script>
+</html>
