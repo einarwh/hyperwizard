@@ -339,9 +339,9 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "east" ], "href": alink("mirrors") },
-      { "rel": [ "move", "exit" ], "href": alink("entrance") },
-      { "rel": [ "take" ], "href": alink("hall/teapot") }
+      { "rel": [ "move", "east" ], "href": alink("mirrors"), "title": "Go through the door to the east." },
+      { "rel": [ "move", "exit" ], "href": alink("entrance"), "title": "Exit the tower." },
+      { "rel": [ "take" ], "href": alink("hall/teapot"), "title": "Take the teapot." }
     ]
   };
 
@@ -497,7 +497,7 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
         "description": "Well done. You may return to The Magical Void with your prize."
       },
       "links": [
-        { "rel": [ "return" ], "href": hylink('void') } 
+        { "rel": [ "return" ], "href": hylink('void'), "title": "Return to the void." } 
       ]
     };
 
@@ -760,13 +760,13 @@ app.get('/hywit/:adv_id/room', function(req, res){
     },
     "links": [ 
       { "rel": [ "self" ], "href": self_link }, 
-      { "rel": [ "move", "south" ], "href": alink('mirrors') } 
+      { "rel": [ "move", "south" ], "href": alink('mirrors'), "title": "Go back to the room of mirrors." } 
     ]
   };
 
   if (adv_state.room) {
     siren.properties.description = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
-    siren.links.push({ "rel": [ "move", "down" ], "href": alink("study") });
+    siren.links.push({ "rel": [ "move", "down" ], "href": alink("study"), "title": "Enter the hole in the floor." });
   }
 
   toResponse(req, res, siren);
@@ -829,8 +829,8 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "south" ], "title": "Go south to the hill", "href": alink("hill") },
-      { "rel": [ "move", "enter" ], "href": alink("tower") } 
+      { "rel": [ "move", "south" ], "href": alink("hill"), "title": "Go south to the hill." },
+      { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." } 
     ]
   };
 
