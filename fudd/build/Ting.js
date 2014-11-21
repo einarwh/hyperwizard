@@ -112,7 +112,7 @@ Elm.Ting.make = function (_elm) {
    });
    var things = function () {
       var inp = $Graphics$Input.input($Maybe.Nothing);
-      var addr = "meh.txt";
+      var addr = "http://hyperwizard.azurewebsites.net/hywit/void";
       var $ = A2($Graphecs.makeField,
       "Thing",
       addr),
@@ -150,17 +150,36 @@ Elm.Ting.make = function (_elm) {
                                            ,body: v._0.body};
    }),
    reqSig);
+   var liink = F3(function (href,
+   ref,
+   s) {
+      return function () {
+         var t = $Text.toText(s);
+         return A5($Graphics$Input.customButton,
+         handle,
+         $Maybe.Just(A2(getReq,
+         $Maybe.Just(ref),
+         href)),
+         $Text.leftAligned(A2($Text.color,
+         $Color.lightBlue,
+         t)),
+         $Text.leftAligned(A2($Text.color,
+         $Color.blue,
+         t)),
+         $Text.leftAligned(A2($Text.color,
+         $Color.darkBlue,
+         t)));
+      }();
+   });
    var renderHeaders = F2(function (ref,
    hs) {
       return function () {
          var link = F2(function (href,
          text) {
-            return A3($Graphecs.butt,
-            handle,
-            $Maybe.Just(A2(getReq,
-            $Maybe.Just(ref),
-            href)),
-            $Text.plainText(text));
+            return A3(liink,
+            href,
+            ref,
+            text);
          });
          var foo = function (_v6) {
             return function () {
@@ -178,7 +197,7 @@ Elm.Ting.make = function (_elm) {
                               ,_1: $Text.plainText(_v6._1)};
                     }();}
                _E.Case($moduleName,
-               "between lines 103 and 106");
+               "between lines 111 and 114");
             }();
          };
          return $Graphecs.renderKV(A2($List.map,
@@ -189,41 +208,83 @@ Elm.Ting.make = function (_elm) {
    var renderLink = F2(function (ref,
    j) {
       return function () {
-         var link = F3(function (s,
-         e,
-         d) {
-            return A2($Graphics$Element.beside,
-            $Graphecs.renderJson($Json.Object(d)),
-            A3($Graphecs.butt,
+         var relToString = function (l) {
+            return A3($List.foldl,
+            F2(function (j,r) {
+               return function () {
+                  var _v11 = {ctor: "_Tuple2"
+                             ,_0: j
+                             ,_1: r};
+                  switch (_v11.ctor)
+                  {case "_Tuple2":
+                     switch (_v11._0.ctor)
+                       {case "String":
+                          switch (_v11._1.ctor)
+                            {case "Just":
+                               return $Maybe.Just($List.concat(_L.fromArray([_v11._1._0
+                                                                            ," "
+                                                                            ,_v11._0._0])));}
+                            break;}
+                       break;}
+                  return $Maybe.Nothing;
+               }();
+            }),
+            $Maybe.Just(""),
+            l);
+         };
+         var link = F2(function (h,j) {
+            return A3($Graphecs.butt,
             handle,
             $Maybe.Just(A2(getReq,
             $Maybe.Just(ref),
-            s)),
-            e));
+            h)),
+            $Graphecs.renderJson(j));
+         });
+         var relink = F2(function (h,l) {
+            return function () {
+               var _v16 = relToString(l);
+               switch (_v16.ctor)
+               {case "Just": return A3(liink,
+                    h,
+                    ref,
+                    _v16._0);
+                  case "Nothing": return A2(link,
+                    h,
+                    j);}
+               _E.Case($moduleName,
+               "between lines 124 and 127");
+            }();
          });
          var rend = function (d) {
             return function () {
-               var _v11 = {ctor: "_Tuple2"
+               var _v18 = {ctor: "_Tuple3"
                           ,_0: A2($Dict.get,"href",d)
-                          ,_1: A2($Dict.get,"rel",d)};
-               switch (_v11.ctor)
-               {case "_Tuple2":
-                  switch (_v11._0.ctor)
+                          ,_1: A2($Dict.get,"title",d)
+                          ,_2: A2($Dict.get,"rel",d)};
+               switch (_v18.ctor)
+               {case "_Tuple3":
+                  switch (_v18._0.ctor)
                     {case "Just":
-                       switch (_v11._0._0.ctor)
+                       switch (_v18._0._0.ctor)
                          {case "String":
-                            switch (_v11._1.ctor)
-                              {case "Just": return A3(link,
-                                   _v11._0._0._0,
-                                   $Graphecs.renderJson(_v11._1._0),
-                                   A2($Dict.remove,
-                                   "rel",
-                                   A2($Dict.remove,"href",d)));
-                                 case "Nothing": return A3(link,
-                                   _v11._0._0._0,
-                                   $Text.plainText(_v11._0._0._0),
-                                   A2($Dict.remove,"href",d));}
-                              break;}
+                            switch (_v18._1.ctor)
+                              {case "Just":
+                                 switch (_v18._1._0.ctor)
+                                   {case "String": return A3(liink,
+                                        _v18._0._0._0,
+                                        ref,
+                                        _v18._1._0._0);}
+                                   break;}
+                              switch (_v18._2.ctor)
+                              {case "Just":
+                                 switch (_v18._2._0.ctor)
+                                   {case "Array": return A2(relink,
+                                        _v18._0._0._0,
+                                        _v18._2._0._0);}
+                                   break;}
+                              return A2(link,
+                              _v18._0._0._0,
+                              j);}
                          break;}
                     break;}
                return $Graphecs.renderJson(j);
@@ -260,19 +321,19 @@ Elm.Ting.make = function (_elm) {
    c,
    d) {
       return function () {
-         var _v21 = A2($Dict.get,a,d);
-         switch (_v21.ctor)
+         var _v32 = A2($Dict.get,a,d);
+         switch (_v32.ctor)
          {case "Just":
-            switch (_v21._0.ctor)
+            switch (_v32._0.ctor)
               {case "Act":
                  return A3($Dict.insert,
                    a,
                    A2(Act,
-                   _v21._0._0,
+                   _v32._0._0,
                    A3($Dict.insert,
                    f,
                    c,
-                   _v21._0._1)),
+                   _v32._0._1)),
                    d);}
               break;}
          return A3($Dict.insert,
@@ -287,16 +348,16 @@ Elm.Ting.make = function (_elm) {
    m,
    d) {
       return function () {
-         var _v25 = A2($Dict.get,a,d);
-         switch (_v25.ctor)
+         var _v36 = A2($Dict.get,a,d);
+         switch (_v36.ctor)
          {case "Just":
-            switch (_v25._0.ctor)
+            switch (_v36._0.ctor)
               {case "Act":
                  return A3($Dict.insert,
                    a,
                    A2(Act,
                    $Maybe.Just(m),
-                   _v25._0._1),
+                   _v36._0._1),
                    d);}
               break;}
          return A3($Dict.insert,
@@ -336,7 +397,7 @@ Elm.Ting.make = function (_elm) {
       A2($Signal.merge,
       actionFieldInp.signal,
       A2($Signal.lift,
-      function (_v35) {
+      function (_v46) {
          return function () {
             return Reset;
          }();
@@ -378,27 +439,27 @@ Elm.Ting.make = function (_elm) {
    href,
    method1,
    ref,
-   _v37,
+   _v48,
    d) {
       return function () {
-         switch (_v37.ctor)
+         switch (_v48.ctor)
          {case "Act":
             return function () {
                  var method = function () {
-                    var _v41 = {ctor: "_Tuple2"
+                    var _v52 = {ctor: "_Tuple2"
                                ,_0: method1
-                               ,_1: _v37._0};
-                    switch (_v41.ctor)
+                               ,_1: _v48._0};
+                    switch (_v52.ctor)
                     {case "_Tuple2":
-                       switch (_v41._0.ctor)
+                       switch (_v52._0.ctor)
                          {case "Just":
-                            return _v41._0._0;}
-                         switch (_v41._1.ctor)
+                            return _v52._0._0;}
+                         switch (_v52._1.ctor)
                          {case "Just":
-                            return _v41._1._0;}
+                            return _v52._1._0;}
                          return "GET";}
                     _E.Case($moduleName,
-                    "between lines 148 and 152");
+                    "between lines 160 and 164");
                  }();
                  var button = A3($Graphics$Input.button,
                  handle,
@@ -406,7 +467,7 @@ Elm.Ting.make = function (_elm) {
                  $Maybe.Just(ref),
                  href,
                  method,
-                 bodyFrom(_v37._1))),
+                 bodyFrom(_v48._1))),
                  "boop");
                  var rendAct = function () {
                     switch (method1.ctor)
@@ -418,7 +479,7 @@ Elm.Ting.make = function (_elm) {
                          methods(name)),
                          button);}
                     _E.Case($moduleName,
-                    "between lines 153 and 157");
+                    "between lines 165 and 169");
                  }();
                  var content = A2($Graphics$Input$Field.Content,
                  "",
@@ -435,24 +496,24 @@ Elm.Ting.make = function (_elm) {
                     A3($Dict.getOrElse,
                     content,
                     s,
-                    _v37._1));
+                    _v48._1));
                  };
                  var rendField = function (f) {
                     return function () {
                        switch (f.ctor)
                        {case "Object":
                           return function () {
-                               var _v50 = A2($Dict.get,
+                               var _v61 = A2($Dict.get,
                                "name",
                                f._0);
-                               switch (_v50.ctor)
+                               switch (_v61.ctor)
                                {case "Just":
-                                  switch (_v50._0.ctor)
+                                  switch (_v61._0.ctor)
                                     {case "String":
                                        return {ctor: "_Tuple2"
-                                              ,_0: $Text.plainText($List.concat(_L.fromArray([_v50._0._0
+                                              ,_0: $Text.plainText($List.concat(_L.fromArray([_v61._0._0
                                                                                              ,": "])))
-                                              ,_1: field(_v50._0._0)};}
+                                              ,_1: field(_v61._0._0)};}
                                     break;}
                                return {ctor: "_Tuple2"
                                       ,_0: $Text.plainText("???")
@@ -481,10 +542,13 @@ Elm.Ting.make = function (_elm) {
                                ,_0: "title"
                                ,_1: $Graphecs.renderJson}
                               ,{ctor: "_Tuple2"
+                               ,_0: "name"
+                               ,_1: $Graphecs.renderJson}
+                              ,{ctor: "_Tuple2"
                                ,_0: "href"
                                ,_1: $Graphecs.renderJson}
                               ,{ctor: "_Tuple2"
-                               ,_0: "name"
+                               ,_0: "method"
                                ,_1: $Graphecs.renderJson}
                               ,{ctor: "_Tuple2"
                                ,_0: "fields"
@@ -493,7 +557,7 @@ Elm.Ting.make = function (_elm) {
                  rendAct);
               }();}
          _E.Case($moduleName,
-         "between lines 138 and 162");
+         "between lines 150 and 175");
       }();
    });
    var renderActions = F3(function (afs,
@@ -502,14 +566,14 @@ Elm.Ting.make = function (_elm) {
       return function () {
          var method = function (d) {
             return function () {
-               var _v55 = A2($Dict.get,
+               var _v66 = A2($Dict.get,
                "method",
                d);
-               switch (_v55.ctor)
+               switch (_v66.ctor)
                {case "Just":
-                  switch (_v55._0.ctor)
+                  switch (_v66._0.ctor)
                     {case "String":
-                       return $Maybe.Just(_v55._0._0);}
+                       return $Maybe.Just(_v66._0._0);}
                     break;}
                return $Maybe.Nothing;
             }();
@@ -519,29 +583,29 @@ Elm.Ting.make = function (_elm) {
          $Dict.empty);
          var rendD = function (d) {
             return function () {
-               var _v58 = {ctor: "_Tuple2"
+               var _v69 = {ctor: "_Tuple2"
                           ,_0: A2($Dict.get,"name",d)
                           ,_1: A2($Dict.get,"href",d)};
-               switch (_v58.ctor)
+               switch (_v69.ctor)
                {case "_Tuple2":
-                  switch (_v58._0.ctor)
+                  switch (_v69._0.ctor)
                     {case "Just":
-                       switch (_v58._0._0.ctor)
+                       switch (_v69._0._0.ctor)
                          {case "String":
-                            switch (_v58._1.ctor)
+                            switch (_v69._1.ctor)
                               {case "Just":
-                                 switch (_v58._1._0.ctor)
+                                 switch (_v69._1._0.ctor)
                                    {case "String":
                                       return A6(renderAction,
-                                        _v58._0._0._0,
-                                        _v58._1._0._0,
+                                        _v69._0._0._0,
+                                        _v69._1._0._0,
                                         method(d),
                                         ref,
                                         A3($Dict.getOrElse,
                                         noAct,
-                                        _v58._0._0._0,
+                                        _v69._0._0._0,
                                         afs),
-                                        A2($Dict.remove,"name",d));}
+                                        d);}
                                    break;}
                               break;}
                          break;}
@@ -588,12 +652,12 @@ Elm.Ting.make = function (_elm) {
                                      fs,
                                      ref)}]);
          return function () {
-            var _v69 = $Json.fromString(s);
-            switch (_v69.ctor)
+            var _v80 = $Json.fromString(s);
+            switch (_v80.ctor)
             {case "Just":
                return A2($Graphecs.renderJsonBut,
                  renderl,
-                 _v69._0);}
+                 _v80._0);}
             return $Text.plainText($List.concat(_L.fromArray(["not soap? :() "
                                                              ,s])));
          }();
@@ -694,6 +758,7 @@ Elm.Ting.make = function (_elm) {
                       ,actionFieldSig: actionFieldSig
                       ,strToGUI: strToGUI
                       ,respToGUI: respToGUI
+                      ,liink: liink
                       ,renderHeaders: renderHeaders
                       ,renderLink: renderLink
                       ,renderLinks: renderLinks
