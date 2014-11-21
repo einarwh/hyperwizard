@@ -98,6 +98,10 @@ function advlink(adv_id, relative) {
   return hylink(adv_id + '/' + relative);
 }
 
+function imglink(imgfile) {
+  return base_url + '/images/' + imgfile;
+}
+
 function s4() {
   return Math.floor((1 + Math.random()) * 0x10000)
              .toString(16)
@@ -152,15 +156,42 @@ function toHtml(srn) {
   var alink;
   var actions = srn.actions;
   var act;
+  var title = "Hypermedia in the Wizard's Tower";
+  if ('undefined' !== typeof srn.title) {
+    title += ": " + srn.title;
+  }
 
   s += "<!DOCTYPE html>";
   s += "<html>";
   s += "<head>";
-  s += "<title>Hypermedia in the Wizard's Tower</title>";
+  s += "<title>" + title + "</title>";
   s += '<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">';
   s += "</head>";
 
   s += "<body>";
+
+  var imageLinks = [];
+  if ('undefined' !== typeof links) {
+    for (var i = 0, len = links.length; i < len; i++) {
+      alink = links[i]; 
+      if ('undefined' !== typeof alink.type) {
+        if (alink.rel.indexOf("view") >= 0) {
+          imageLinks.push(alink);
+        }
+      }
+    }
+  }
+
+  var imgCount = imageLinks.length;
+  if (imgCount > 0) {
+    s += '<div class="images">';
+    for (var imgIndex = 0; imgIndex < imgCount; imgIndex++) {
+      var animage = imageLinks[imgIndex];
+      s += '<img src="' + animage.href + '" />';
+    }
+    s += '</div>'; 
+  }
+
   s += "<div>";
   
   s += '<p class="name">' + props.name + '</p>';
@@ -371,7 +402,10 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
         "name": "A terrifying grue.",
         "description": "Uh-oh. A terrifying grue has appeared in front of you. This could be fatal, unless you know your HTTP methods."
       },
-      "actions": [ act ]
+      "actions": [ act ],
+      "links": [       
+        { "rel": [ "view" ], "href": imglink("gisforgrue.jpg"), type: "image/jpeg" }
+      ]
     };
     toResponse(req, res, siren);
   } else {
@@ -451,8 +485,8 @@ app.get('/hywit/:adv_id/study', function(req, res) {
   var siren = { "class": [ "location" ],
     "title": "The Wizard's Study",
     "properties": { 
-      "name": "The Wizard’s Study", 
-      "description": "You have entered the Wizard’s Study. Luckily, the Wizard is not in, or he would surely have deleted you. This means that you have conquered the Wizard’s Tower. Congratulations! You may pick a prize, by choosing a book from the Wizard’s shelf. Choose wisely."
+      "name": "The Wizard's Study", 
+      "description": "You have entered the Wizard's Study. Luckily, the Wizard is not in, or he would surely have deleted you. This means that you have conquered the Wizard's Tower. Congratulations! You may pick a prize, by choosing a book from the Wizard's shelf. Choose wisely."
     },
     "actions": [ 
       book_action(1),
@@ -842,6 +876,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
   var self_link = alink('tower');
   var siren = {
     "title": "The Guardian Skull",
@@ -864,6 +899,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "previous" ], "href": alink("entrance") },
+      { "rel": [ "view" ], "href": imglink("wiztower.jpg"), type: "image/jpeg" }
     ]
   };
 

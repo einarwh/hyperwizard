@@ -2,46 +2,13 @@ var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
 
-var mem = {};
+var mem = { history: [] };
 
-var visit = function(self, url, accepts) {
-  var acceptsHeader = accepts || "application/vnd.siren+json";
-  
-  var opt = null;
-  if (typeof url === 'string') {
-    opt = { uri: url };
-  }
-  else {
-    opt = url;
-  }
-  opt.followRedirect = false;
-
-  var reqInfo = {};
-  var resInfo = {};
-
-  var requestMethod = opt.method || "GET";
-  reqInfo.url = opt.uri;
-  reqInfo.method = requestMethod;
-  opt.headers = {
-    "Accept": acceptsHeader,
-    "Referer": self.at,
-    "X-Alt-Referer": self.at
-  };
-
-  reqInfo.accept = opt.headers.Accept;
-
-  if (mem[opt.uri] && requestMethod === 'GET') {
-    opt.headers["If-None-Match"] = mem[opt.uri].etag;
-    reqInfo["if-none-match"] = mem[opt.uri].etag;
-  }
-
-  if (opt.form) {
-    reqInfo.form = opt.form;
-  }
-
-  neat({ request: reqInfo});
+var sendRequest = function(self, opt, requestMethod) {
 
   request(opt, function(error, response, body) {
+    var resInfo = {};
+
     if (error) {
       resInfo.error = error;
       neat({ response: resInfo});
@@ -68,7 +35,10 @@ var visit = function(self, url, accepts) {
     self.where = self.at;
     self.statusCode = response.statusCode;
 
-    //console.log(response.headers["content-type"]);
+    if (self.statusCode >= 200 && self.statusCode < 300) {
+      var remember = { method: requestMethod, options: opt };
+      mem.history.push(remember);
+    }
 
     // TODO: obviously must also be GET request.
     if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {
@@ -125,6 +95,46 @@ var visit = function(self, url, accepts) {
 
     neat({ response: resInfo });
   });
+
+}
+
+var visit = function(self, url, accepts) {
+  var acceptsHeader = accepts || "application/vnd.siren+json";
+  
+  var opt = null;
+  if (typeof url === 'string') {
+    opt = { uri: url };
+  }
+  else {
+    opt = url;
+  }
+  opt.followRedirect = false;
+
+  var reqInfo = {};
+
+  var requestMethod = opt.method || "GET";
+  reqInfo.url = opt.uri;
+  reqInfo.method = requestMethod;
+  opt.headers = {
+    "Accept": acceptsHeader,
+    "Referer": self.at,
+    "X-Alt-Referer": self.at
+  };
+
+  reqInfo.accept = opt.headers.Accept;
+
+  if (mem[opt.uri] && requestMethod === 'GET') {
+    opt.headers["If-None-Match"] = mem[opt.uri].etag;
+    reqInfo["if-none-match"] = mem[opt.uri].etag;
+  }
+
+  if (opt.form) {
+    reqInfo.form = opt.form;
+  }
+
+  neat({ request: reqInfo });
+
+  sendRequest(self, opt, requestMethod);
 };
 
 var findAction = function(self, actionName) {
@@ -247,6 +257,30 @@ exports.go = function(linkIndex) {
     var url = link.href;
     visit(this, url);
 };
+
+exports.back = function() {
+  if (mem.history.length > 0) {
+    mem.history.pop();
+    if (mem.history.length > 0) {
+      var info = mem.history[mem.history.length - 1];
+      var opt = info.options;
+      var requestMethod = info.method;
+      if (mem[opt.uri] && requestMethod === 'GET') {
+        opt.headers["If-None-Match"] = mem[opt.uri].etag;
+      }
+
+      var reqInfo = {
+        url: opt.uri,
+        method: requestMethod,
+        accept: opt.headers.Accept
+      };
+
+      neat({ request: reqInfo });
+
+      sendRequest(this, opt, requestMethod);
+    }
+  }
+}
 
 exports.follow = function() {
     var self = this;
