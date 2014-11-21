@@ -3,6 +3,8 @@ var app = express();
 var fs = require('fs');
 
 app.use('/fudd', express.static(__dirname + '/fudd'));
+app.use('/images', express.static(__dirname + '/images'));
+
 app.use(express.urlencoded());
 app.use(express.json());
 
@@ -45,8 +47,6 @@ function get_reps() {
   }
   return reps;
 }
-
-//var reps = get_reps();
 
 function has_rep(rep) {
   var reps = get_reps();
@@ -237,7 +237,6 @@ function toJsonResponse(req, res, siren, statusCode) {
   res.status(sc).send(transform(siren));
 }
 
-
 app.get('/', function(req, res) {
   res.contentType("text/plain");
   res.send("Visit http://github.com/einarwh/hyperwizard");
@@ -265,7 +264,9 @@ app.get('/hywit/void', function(req, res) {
     res.send(JSON.stringify(plainJson));
     return;
   }
-	var siren = { "class": [ "location" ],
+	var siren = { 
+  "title": "The Magical Void",
+  "class": [ "location" ],
   "properties": { 
       "name": "The Magical Void", 
       "description": "You\'re in The Magical Void, a place beyond space and time. This is where adventures begin.",
@@ -288,8 +289,6 @@ app.get('/hywit/void', function(req, res) {
 
   toResponse(req, res, siren);
 });
-
-
 
 app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
   var adv_id = req.params.adv_id;
@@ -332,6 +331,7 @@ app.get('/hywit/:adv_id/hall', function(req, res){
   
   var self_link = alink('hall');
   var siren = {
+    "title": "The Great Hall",
     "class": [ "location" ],
     "properties": { 
       "name": "The Great Hall", 
@@ -365,6 +365,7 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
       "href": alink('gruesome')
     }
     var siren = {
+      "title": "A terrifying grue.",
       "class": [ "location" ],
       "properties": {
         "name": "A terrifying grue.",
@@ -448,6 +449,7 @@ app.get('/hywit/:adv_id/study', function(req, res) {
   };
 
   var siren = { "class": [ "location" ],
+    "title": "The Wizard's Study",
     "properties": { 
       "name": "The Wizard’s Study", 
       "description": "You have entered the Wizard’s Study. Luckily, the Wizard is not in, or he would surely have deleted you. This means that you have conquered the Wizard’s Tower. Congratulations! You may pick a prize, by choosing a book from the Wizard’s shelf. Choose wisely."
@@ -489,6 +491,7 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   if (book_id === 3) {
     siren = { 
       "class": [ "location" ],
+      "title": book_name(book_id),
       "properties": { 
         "name": book_name(book_id), 
         "description": "Well done. You may return to The Magical Void with your prize."
@@ -552,6 +555,7 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
   var self_link = alink('mirrors/' + mirror);
 
   var siren = { "class": [ "location" ],
+    "title": "Mirror #" + mirror,
     "properties": { 
       "name": "Mirror #" + mirror, 
       "description": desc
@@ -632,6 +636,7 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     { "rel": [ "move", "west" ], "href": alink("hall") });
 
   var siren = { "class": [ "location" ],
+    "title": "The Mirror Room",
     "properties": { 
       "name": "The Mirror Room", 
       "description": desc
@@ -726,32 +731,6 @@ app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
   breakMirror(req, res);
 }); 
 
-/*
-app.get('/hywit/:adv_id/brook', function(req, res){
-  var adv_id = req.params.adv_id;
-  var alink = function (relative) {
-    return advlink(adv_id, relative);
-  };
-  var self_link = alink('brook');
-  var siren = {
-    "class": [ "location" ],
-    "properties": { 
-      "name": "The Merry Clucking Brook", 
-      "description": "You’re next to a lovely brook. There’s a sign here. You see a grassy hill to the west.",
-    },
-    "links": [
-      { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "west" ], "href": alink("hill") },
-      //{ "rel": [ "move", "south" ], "href": alink("cave" )},
-      { "rel": [ "look" ], "href": alink("sign") }
-    ]
-  };
-  res.contentType("application/vnd.siren+json");
-  res.send(JSON.stringify(siren));
-});
-
-*/
-
 app.get('/hywit/:adv_id/room', function(req, res){
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
@@ -773,6 +752,7 @@ app.get('/hywit/:adv_id/room', function(req, res){
   var self_link = alink('room');
 
   var siren = {
+    "title": "The Unassuming Room",
     "class": [ "location" ],
     "properties": { 
       "name": "The Unassuming Room", 
@@ -792,7 +772,6 @@ app.get('/hywit/:adv_id/room', function(req, res){
   toResponse(req, res, siren);
 });
 
-
 var ltrSignText = 'thetowerofthemightywizardedsgeristhatway';
 var rtlSignText = ltrSignText.reverse();
 var signText = rtlSignText;
@@ -808,6 +787,7 @@ app.get('/hywit/:adv_id/sign', function(req, res){
   var self_link = alink('sign');
   var signDesc = "The sign says '" + signText + "'.";
   var siren = {
+    "title": "The Mysterious Sign",
   "class": [ "entity" ],
   "properties": { 
       "name": "The Mysterious Sign", 
@@ -841,6 +821,7 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
   };
   var self_link = alink('entrance');
   var siren = {
+    "title": "The Tower Entrance",
     "class": [ "location" ],
     "properties": { 
       "name": "The Tower Entrance", 
@@ -863,6 +844,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
   };
   var self_link = alink('tower');
   var siren = {
+    "title": "The Guardian Skull",
     "class": [ "challenge" ],
     "properties": { 
       "name": "The Guardian Skull", 
@@ -909,6 +891,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   }
   else {
     var siren = {
+      "title": "The Guardian Skull",
       "class": [ "challenge" ],
       "properties": { 
         "name": "The Guardian Skull", 
@@ -949,6 +932,7 @@ function turnSign(req, res) {
 
     var signDesc = "The sign says '" + signText + "'.";
     var siren = {
+      "title": "The Mysterious Sign",
       "class": [ "entity" ],
       "properties": { 
         "name": "The Mysterious Sign", 
