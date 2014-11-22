@@ -1,0 +1,13 @@
+{
+    "title": "The Lake",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Lake", 
+      "description": "You're standing on the island. A boat is tied to a pole. There's a wooden sign here."
+    },
+    "links": [
+      { "rel": [ "self" ], "href": "self" },
+      { "rel": [ "move" ], "title": "Row back to the shore.", "href": "lake" },
+      { "rel": [ "look" ], "title": "Read the sign.", "href": "sign" }
+    ]
+}

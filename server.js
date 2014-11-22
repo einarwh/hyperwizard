@@ -342,6 +342,126 @@ app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
   res.status(418).location(alink('hall')).send();
 });
 
+app.get('/hywit/:adv_id/lake', function(req, res){
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var self_link = alink('lake');
+  var siren = {
+    "title": "The Lake",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Lake", 
+      "description": ""
+    },
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "east" ], "title": "Follow the brook north", "href": alink("brook") }  
+    ]
+  };
+
+  if (undefined === adv_state.boat) {
+    siren.properties.description = "You're standing on the shore of a lake. There's small island in the middle, where you can see a rowing boat tied to a pole. Unfortunately, the current is too strong for you to venture swimming over. Every now and then, the head of an otter emerges from the water.";
+
+    if (undefined === adv_state.otter) {
+      var otter = { 
+        name: "send-otter", 
+        title: "Send the otter to fetch the boat.", 
+        method: "POST",
+        href: self_link
+      }
+
+      siren.actions = [ otter ];
+    }
+    else {
+      siren.links.push({
+        "rel": [ "look" ], 
+        "title": "Look at the otter", 
+        "href": alink('otter')
+      });
+    }
+  }
+  else {
+    siren.properties.description = "You're standing on the shore of a lake. There's small island in the middle. There is a boat here. Every now and then, the head of an otter emerges from the water.";
+
+    var row = { 
+      "rel": [ "move" ], 
+      "title": "Row to the island", 
+      "href": alink('island') 
+    };
+
+    siren.links.push(row);
+  }
+
+  toResponse(req, res, siren);
+});
+
+app.post('/hywit/:adv_id/lake', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  adv_state.otter = Date.now() / 1000;
+
+  res.status(202).location(alink('otter')).send();
+});
+
+app.get('/hywit/:adv_id/otter', function(req, res){
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var current = Date.now() / 1000;
+  var elapsed = current - adv_state.otter;
+  var otterReturned = elapsed > 60;
+  if (otterReturned) {
+    adv_state.boat = current;
+    res.status(303).location(alink('lake')).send();
+    return;
+  }
+
+  var self_link = alink('otter');
+  var siren = {
+    "title": "The Swimming Otter",
+    "class": [ "entity" ],
+    "properties": { 
+      "name": "The Swimming Otter", 
+      "description": "The otter is on its way to fetch the rowing boat."
+    },
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "previous" ], "href": alink('lake') }  
+    ]
+  };
+
+  toResponse(req, res, siren);
+});
+
 app.get('/hywit/:adv_id/hall', function(req, res){
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
@@ -822,28 +942,28 @@ app.get('/hywit/:adv_id/sign', function(req, res){
   var signDesc = "The sign says '" + signText + "'.";
   var siren = {
     "title": "The Mysterious Sign",
-  "class": [ "entity" ],
-  "properties": { 
+    "class": [ "entity" ],
+    "properties": { 
       "name": "The Mysterious Sign", 
       "description": signDesc,
       "orientation": signOrientation 
-  },
-  "actions": [ 
-    { 
-      "name": "turn-sign", 
-      "title": "Reorient the sign.",
-      "method": "PUT",
-      "href": self_link,
-      "fields": [
-        { "name": "orientation", "type": "text" }
-      ]
-    }
-  ],
-  "links": [
-    { "rel": [ "self" ], "href": self_link },
-    { "rel": [ "previous"], "href": alink("brook") }
-  ]
-};
+    },
+    "actions": [ 
+      { 
+        "name": "turn-sign", 
+        "title": "Reorient the sign.",
+        "method": "PUT",
+        "href": self_link,
+        "fields": [
+          { "name": "orientation", "type": "text" }
+        ]
+      }
+    ],
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "previous"], "href": alink("island") }
+    ]
+  };
 
   toResponse(req, res, siren);
 });
