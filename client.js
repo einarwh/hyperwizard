@@ -1,6 +1,7 @@
 var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
+var fs = require('fs');
 
 var mem = { history: [] };
 
@@ -159,6 +160,39 @@ var lookupAction = function(self, actionId) {
 
 var neat = function(json) {
   console.log(prettyjson.render(json));
+};
+
+var down = function(uri, filename) {
+  request.head(uri, function(err, res, body) {
+
+    if (err) {
+      neat( { error: err } );
+      return;
+    }
+
+    var r = request(uri);
+    r.on('response', function (resp) {
+      if (resp.statusCode === 200) {
+        r.pipe(fs.createWriteStream("downloads/" + filename));
+        var resInfo = {
+          "content-type": res.headers['content-type'],
+          downloaded: filename, 
+          bytes: res.headers['content-length']
+        };
+        neat(resInfo);
+      }
+      else {
+        var statusName = http.STATUS_CODES[resp.statusCode];
+        var statusText = resp.statusCode + " " + statusName;
+        neat( { error: statusText } );
+      }
+    }); 
+  });   
+};
+
+exports.download = function(uri, filename) {
+  filename = filename || uri.substring(uri.lastIndexOf('/') + 1)
+  down(uri, filename, function() { console.log("done..."); } );
 };
 
 exports.to = function(url, accepts) {
