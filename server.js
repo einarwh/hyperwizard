@@ -365,7 +365,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "east" ], "title": "Follow the brook north", "href": alink("brook") }  
+      { "rel": [ "move", "north" ], "title": "Follow the brook north", "href": alink("brook") }  
     ]
   };
 
@@ -1108,7 +1108,7 @@ function turnSign(req, res) {
       ],
       "links": [
         { "rel": [ "self" ], "href": self_link },
-        { "rel": [ "previous"], "href": alink("brook") }
+        { "rel": [ "previous"], "href": alink("island") }
       ]
     };
 
