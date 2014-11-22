@@ -772,9 +772,9 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     links.push(look_mirror(mrr));
   }
 
-  var desc = "You’re in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There’s a door to the north and to the west.";
+  var desc = "You're in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There's a door to the north and to the west.";
   if (mirror_actions.length === 0) {
-    desc = "You’re in a room with a single mirror. There’s a door to the north and to the west.";
+    desc = "You're in a room with a single mirror. There's a door to the north and to the west.";
     var enter_action = { 
       "name": "enter-mirror-" + adv_state.unbreakable,
       "title": "Enter the mirror!",
