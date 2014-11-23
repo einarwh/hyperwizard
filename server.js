@@ -535,7 +535,7 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
       },
       "actions": [ act ],
       "links": [       
-        { "rel": [ "view" ], "href": imglink("gisforgrue.jpg"), type: "image/jpeg" }
+        { "rel": [ "view" ], "href": imglink("grue.png"), type: "image/png" }
       ]
     };
     toResponse(req, res, siren);
@@ -1029,7 +1029,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "previous" ], "href": alink("entrance") },
-      { "rel": [ "view" ], "href": imglink("wiztower.jpg"), type: "image/jpeg" }
+      { "rel": [ "view" ], "href": imglink("skull.png"), type: "image/png" }
     ]
   };
 
