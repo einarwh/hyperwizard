@@ -438,6 +438,8 @@ app.get('/hywit/:adv_id/otter', function(req, res){
 
   var current = Date.now() / 1000;
   var elapsed = current - adv_state.otter;
+  var totalTime = 60;
+  var halfTime = 30;
   var otterReturned = elapsed > 60;
   if (otterReturned) {
     adv_state.boat = current;
@@ -451,13 +453,20 @@ app.get('/hywit/:adv_id/otter', function(req, res){
     "class": [ "entity" ],
     "properties": { 
       "name": "The Swimming Otter", 
-      "description": "The otter is on its way to fetch the rowing boat."
+      "description": "The otter is on its way to fetch the rowing boat. It has spent " + Math.floor(elapsed) + " seconds so far."
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "previous" ], "href": alink('lake') }  
     ]
   };
+
+  if (elapsed > halfTime) {
+    siren.properties.description += " Currently, it is on the way back, towing the boat.";
+  }
+  else {
+    siren.properties.description += " Currently, it is swimming towards the island.";
+  }
 
   toResponse(req, res, siren);
 });
