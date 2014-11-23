@@ -459,7 +459,8 @@ app.get('/hywit/:adv_id/otter', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "previous" ], "href": alink('lake') }  
+      { "rel": [ "previous" ], "href": alink('lake') },
+      { "rel": [ "view" ], "href": imglink("otter.png"), type: "image/png" }
     ]
   };
 
