@@ -75,36 +75,64 @@ Elm.Graphecs.make = function (_elm) {
    };
    var renderKV = function (l) {
       return function () {
-         var maxW = A3($List.foldl,
-         F2(function (_v0,n) {
+         var maxOf = F2(function (_v0,
+         n) {
             return function () {
                switch (_v0.ctor)
                {case "_Tuple2":
-                  return A2($Basics.max,
-                    $Graphics$Element.widthOf(_v0._0),
-                    n);}
+                  return function () {
+                       switch (_v0._1.ctor)
+                       {case "Labeled":
+                          return A2($Basics.max,
+                            $Graphics$Element.widthOf(_v0._0),
+                            n);}
+                       return n;
+                    }();}
                _E.Case($moduleName,
-               "on line 36, column 45 to 62");
+               "between lines 38 and 41");
             }();
-         }),
-         0,
-         l);
-         var foo = function (_v4) {
+         });
+         var renderedL = A2($List.map,
+         function (_v6) {
             return function () {
-               switch (_v4.ctor)
+               switch (_v6.ctor)
                {case "_Tuple2":
-                  return A2($Graphics$Element.beside,
-                    A2(leftAl,maxW,_v4._0),
-                    _v4._1);}
+                  return {ctor: "_Tuple2"
+                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v6._0
+                                                                        ,":  "])))
+                         ,_1: _v6._1};}
                _E.Case($moduleName,
-               "on line 37, column 33 to 59");
+               "on line 37, column 47 to 79");
+            }();
+         },
+         l);
+         var maxW = A3($List.foldl,
+         maxOf,
+         0,
+         renderedL);
+         var foo = function (_v10) {
+            return function () {
+               switch (_v10.ctor)
+               {case "_Tuple2":
+                  return function () {
+                       switch (_v10._1.ctor)
+                       {case "Labeled":
+                          return A2($Graphics$Element.beside,
+                            A2(leftAl,maxW,_v10._0),
+                            _v10._1._0);
+                          case "Only": return _v10._1._0;}
+                       _E.Case($moduleName,
+                       "between lines 42 and 45");
+                    }();}
+               _E.Case($moduleName,
+               "between lines 42 and 45");
             }();
          };
          return A2($Graphics$Element.flow,
          $Graphics$Element.down,
          A2($List.map,
          spacey,
-         A2($List.map,foo,l)));
+         A2($List.map,foo,renderedL)));
       }();
    };
    var bordered = F2(function (c,
@@ -113,6 +141,39 @@ Elm.Graphecs.make = function (_elm) {
       c,
       spacey(e));
    });
+   var butt = F3(function (h,v,e) {
+      return A5($Graphics$Input.customButton,
+      h,
+      v,
+      A2(bordered,$Color.lightBlue,e),
+      A2(bordered,$Color.blue,e),
+      A2(bordered,$Color.darkBlue,e));
+   });
+   var Only = function (a) {
+      return {ctor: "Only",_0: a};
+   };
+   var Labeled = function (a) {
+      return {ctor: "Labeled"
+             ,_0: a};
+   };
+   var renderD = function (d) {
+      return function () {
+         var render = function (_v17) {
+            return function () {
+               switch (_v17.ctor)
+               {case "_Tuple2":
+                  return {ctor: "_Tuple2"
+                         ,_0: _v17._0
+                         ,_1: Labeled(renderJson(_v17._1))};}
+               _E.Case($moduleName,
+               "on line 33, column 34 to 59");
+            }();
+         };
+         return A2($List.map,
+         render,
+         $Dict.toList(d));
+      }();
+   };
    var renderJson = function (x) {
       return function () {
          switch (x.ctor)
@@ -128,13 +189,13 @@ Elm.Graphecs.make = function (_elm) {
             return $Text.plainText($String.show(x._0));
             case "Object":
             return function () {
-                 var _v14 = renderD(x._0);
-                 switch (_v14.ctor)
+                 var _v27 = renderD(x._0);
+                 switch (_v27.ctor)
                  {case "[]":
                     return $Graphics$Element.empty;}
                  return A2(bordered,
                  $Color.darkGrey,
-                 renderKV(_v14));
+                 renderKV(_v27));
               }();
             case "String":
             return function () {
@@ -145,67 +206,47 @@ Elm.Graphecs.make = function (_elm) {
                  e) : e;
               }();}
          _E.Case($moduleName,
-         "between lines 20 and 29");
+         "between lines 21 and 30");
       }();
    };
-   var renderD = function (d) {
-      return function () {
-         var render = function (_v15) {
-            return function () {
-               switch (_v15.ctor)
-               {case "_Tuple2":
-                  return {ctor: "_Tuple2"
-                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v15._0
-                                                                        ,": "])))
-                         ,_1: renderJson(_v15._1)};}
-               _E.Case($moduleName,
-               "on line 32, column 34 to 76");
-            }();
-         };
-         return A2($List.map,
-         render,
-         $Dict.toList(d));
-      }();
-   };
-   var renderJsonBut = F2(function (l,
+   var renderJsonHalp = F2(function (l,
    j) {
       return function () {
-         var render = function (_v19) {
+         var render = function (_v28) {
             return function () {
-               switch (_v19.ctor)
+               switch (_v28.ctor)
                {case "_Tuple3":
                   return {ctor: "_Tuple2"
-                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v19._0
-                                                                        ,": "])))
-                         ,_1: _v19._1(_v19._2)};}
+                         ,_0: _v28._0
+                         ,_1: _v28._1(_v28._2)};}
                _E.Case($moduleName,
-               "on line 47, column 29 to 62");
+               "on line 59, column 29 to 35");
             }();
          };
          var consDKV = F3(function (d,
-         _v24,
+         _v33,
          kvs) {
             return function () {
-               switch (_v24.ctor)
+               switch (_v33.ctor)
                {case "_Tuple2":
                   return function () {
-                       var _v28 = A2($Dict.get,
-                       _v24._0,
+                       var _v37 = A2($Dict.get,
+                       _v33._0,
                        d);
-                       switch (_v28.ctor)
+                       switch (_v37.ctor)
                        {case "Just":
                           return A2($List._op["::"],
                             {ctor: "_Tuple3"
-                            ,_0: _v24._0
-                            ,_1: _v24._1
-                            ,_2: _v28._0},
+                            ,_0: _v33._0
+                            ,_1: _v33._1
+                            ,_2: _v37._0},
                             kvs);
                           case "Nothing": return kvs;}
                        _E.Case($moduleName,
-                       "between lines 43 and 46");
+                       "between lines 55 and 58");
                     }();}
                _E.Case($moduleName,
-               "between lines 43 and 46");
+               "between lines 55 and 58");
             }();
          });
          var keyVals = F2(function (d,
@@ -225,27 +266,33 @@ Elm.Graphecs.make = function (_elm) {
          return function () {
             switch (j.ctor)
             {case "Object":
-               return A2(bordered,
-                 $Color.darkGray,
-                 renderKV($List.concat(_L.fromArray([A2($List.map,
-                                                    render,
-                                                    A2(keyVals,j._0,l))
-                                                    ,renderD(A2(remove,
-                                                    j._0,
-                                                    l))]))));}
-            return renderJson(j);
+               return $Maybe.Just($List.concat(_L.fromArray([A2($List.map,
+                                                            render,
+                                                            A2(keyVals,j._0,l))
+                                                            ,renderD(A2(remove,
+                                                            j._0,
+                                                            l))])));}
+            return $Maybe.Nothing;
          }();
       }();
    });
-   var butt = F3(function (h,v,e) {
-      return A5($Graphics$Input.customButton,
-      h,
-      v,
-      A2(bordered,$Color.lightBlue,e),
-      A2(bordered,$Color.blue,e),
-      A2(bordered,$Color.darkBlue,e));
+   var renderJsonBut = F2(function (l,
+   j) {
+      return function () {
+         var _v41 = A2(renderJsonHalp,
+         l,
+         j);
+         switch (_v41.ctor)
+         {case "Just":
+            return A2(bordered,
+              $Color.darkGray,
+              renderKV(_v41._0));}
+         return renderJson(j);
+      }();
    });
    _elm.Graphecs.values = {_op: _op
+                          ,Labeled: Labeled
+                          ,Only: Only
                           ,spacec: spacec
                           ,spacey: spacey
                           ,bordered: bordered
@@ -253,6 +300,7 @@ Elm.Graphecs.make = function (_elm) {
                           ,renderD: renderD
                           ,renderKV: renderKV
                           ,renderJsonBut: renderJsonBut
+                          ,renderJsonHalp: renderJsonHalp
                           ,butt: butt
                           ,makeField: makeField
                           ,centered: centered

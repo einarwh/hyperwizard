@@ -17,6 +17,7 @@ String.prototype.endsWith = function(suffix) {
 };
 
 var adventures = {};
+var masterWizardName = "Edsger";
 
 function book_name(index) {
   if (index === 1) {
@@ -650,7 +651,6 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   }
 
   var book_id = parseInt(req.params.book_id, 10);
-  console.log("Book: " + book_id);
   var siren;
   if (book_id === 3) {
     siren = { 
@@ -1051,7 +1051,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   
   var master = req.body.master;
 
-  if ("Edsger" === master) {
+  if (masterWizardName === master) {
     adv_state.closed = false;
     res.status(302).location(alink('hall')).send();
   }
@@ -1074,6 +1074,12 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
 
 function turnSign(req, res) {
   var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
@@ -1091,6 +1097,8 @@ function turnSign(req, res) {
         signText = rtlSignText;
       }
       else {
+        // This is the legible way.
+        adv_state.wizardname = masterWizardName;
         signOrientation = ltrOrientation;
         signText = ltrSignText;
       } 
@@ -1234,6 +1242,13 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
           hlink.href = alink(hlink.href);
         }
       }  
+    }
+
+    if (resource === 'hill') {
+      if (adv_state.wizardname !== undefined) {
+        console.log("replace!");
+        siren.properties.description = siren.properties.description.replace("Unnamed Wizard", "Wizard " + masterWizardName);
+      }
     }
 
     toResponse(req, res, siren);

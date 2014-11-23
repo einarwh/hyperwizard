@@ -76,6 +76,24 @@ Elm.Ting.make = function (_elm) {
          rs);
       }();
    };
+   var renderTitle = function (j) {
+      return function () {
+         switch (j.ctor)
+         {case "String":
+            return $Graphecs.Only($Text.leftAligned($Text.bold(A2($Text.height,
+              14,
+              $Text.toText(j._0)))));}
+         return $Graphecs.Labeled($Graphecs.renderJson(j));
+      }();
+   };
+   var renderJBut = function (l) {
+      return function ($) {
+         return $Graphecs.Labeled($Graphecs.renderJsonBut(l)($));
+      };
+   };
+   var renderJ = function ($) {
+      return $Graphecs.Labeled($Graphecs.renderJson($));
+   };
    var inn = $Native$Ports.portIn("inn",
    $Native$Ports.incomingSignal(function (v) {
       return v === null ? $Maybe.Nothing : $Maybe.Just(_U.isJSArray(v) ? {ctor: "_Tuple2"
@@ -100,21 +118,34 @@ Elm.Ting.make = function (_elm) {
                                                                                                                                                                                                                                                           })) : _E.raise("invalid input, expecting JSArray but got " + v[1].headers)} : _E.raise("invalid input, expecting JSObject [\"url\",\"body\",\"status\",\"statusText\",\"headers\"] but got " + v[1]))} : _E.raise("invalid input, expecting JSArray but got " + v));
    }));
    var binput = $Graphics$Input.input({ctor: "_Tuple0"});
-   var b = A3($Graphics$Input.button,
+   var b = A2($Graphics$Element.width,
+   80,
+   A2($Graphics$Element.height,
+   20,
+   A3($Graphics$Input.button,
    binput.handle,
    {ctor: "_Tuple0"},
-   "beep");
+   "GET")));
+   var jsonGet = F2(function (j,
+   s) {
+      return function () {
+         switch (j.ctor)
+         {case "Object":
+            return A2($Dict.get,s,j._0);}
+         return $Maybe.Nothing;
+      }();
+   });
    var bodyFrom = function (d) {
       return function () {
          var foo = function (l) {
             return A2($List.map,
-            function (_v5) {
+            function (_v9) {
                return function () {
-                  switch (_v5.ctor)
+                  switch (_v9.ctor)
                   {case "_Tuple2":
-                     return $List.concat(_L.fromArray([_v5._0
+                     return $List.concat(_L.fromArray([_v9._0
                                                       ,"="
-                                                      ,_v5._1.string]));}
+                                                      ,_v9._1.string]));}
                   _E.Case($moduleName,
                   "on line 38, column 33 to 57");
                }();
@@ -223,26 +254,26 @@ Elm.Ting.make = function (_elm) {
    var renderHeaders = F2(function (ref,
    hs) {
       return function () {
-         var foo = function (_v11) {
+         var foo = function (_v15) {
             return function () {
-               switch (_v11.ctor)
+               switch (_v15.ctor)
                {case "_Tuple2":
                   return function () {
-                       switch (_v11._0)
+                       switch (_v15._0)
                        {case "Location":
                           return {ctor: "_Tuple2"
-                                 ,_0: $Text.plainText("Location: ")
-                                 ,_1: A3(liink,
+                                 ,_0: "Location: "
+                                 ,_1: $Graphecs.Labeled(A3(liink,
                                  ref,
-                                 _v11._1,
-                                 _v11._1)};}
+                                 _v15._1,
+                                 _v15._1))};}
                        return {ctor: "_Tuple2"
-                              ,_0: $Text.plainText($List.concat(_L.fromArray([_v11._0
-                                                                             ,": "])))
-                              ,_1: $Text.plainText(_v11._1)};
+                              ,_0: $List.concat(_L.fromArray([_v15._0
+                                                             ,": "]))
+                              ,_1: $Graphecs.Labeled($Text.plainText(_v15._1))};
                     }();}
                _E.Case($moduleName,
-               "between lines 117 and 120");
+               "between lines 132 and 135");
             }();
          };
          return $Graphecs.renderKV(A2($List.map,
@@ -253,89 +284,75 @@ Elm.Ting.make = function (_elm) {
    var renderLink = F2(function (ref,
    j) {
       return function () {
-         var text = F2(function (h,
-         d) {
+         var text = function (h) {
             return function () {
-               var _v16 = {ctor: "_Tuple2"
-                          ,_0: A2($Dict.get,"title",d)
-                          ,_1: A2($Dict.get,"rel",d)};
-               switch (_v16.ctor)
+               var _v20 = {ctor: "_Tuple2"
+                          ,_0: A2(jsonGet,j,"title")
+                          ,_1: A2(jsonGet,j,"rel")};
+               switch (_v20.ctor)
                {case "_Tuple2":
-                  switch (_v16._0.ctor)
+                  switch (_v20._0.ctor)
                     {case "Just":
-                       switch (_v16._0._0.ctor)
+                       switch (_v20._0._0.ctor)
                          {case "String":
-                            return _v16._0._0._0;}
+                            return _v20._0._0._0;}
                          break;}
-                    switch (_v16._1.ctor)
+                    switch (_v20._1.ctor)
                     {case "Just":
-                       switch (_v16._1._0.ctor)
+                       switch (_v20._1._0.ctor)
                          {case "Array":
                             return function () {
-                                 var _v23 = relToString(_v16._1._0._0);
-                                 switch (_v23.ctor)
-                                 {case "Just": return _v23._0;}
+                                 var _v27 = relToString(_v20._1._0._0);
+                                 switch (_v27.ctor)
+                                 {case "Just": return _v27._0;}
                                  return h;
                               }();}
                          break;}
                     break;}
                return h;
             }();
-         });
-         var rendLink = F2(function (h,
-         d) {
+         };
+         var rendLink = function (h) {
             return A3(liink,
             ref,
             h,
-            A2(text,h,d));
-         });
-         var rendImg = F2(function (h,
-         d) {
+            text(h));
+         };
+         var rendImg = function (h) {
             return A2($Graphecs.bordered,
             $Color.darkGray,
             A2($Graphics$Element.above,
             $Text.leftAligned(A2($Text.link,
             h,
-            $Text.toText(A2(text,h,d)))),
+            $Text.toText(text(h)))),
             A3($Graphics$Element.fittedImage,
             400,
             400,
             h)));
-         });
+         };
          return function () {
-            switch (j.ctor)
-            {case "Object":
-               return function () {
-                    var _v27 = {ctor: "_Tuple2"
-                               ,_0: A2($Dict.get,"href",j._0)
-                               ,_1: A2($Dict.get,"type",j._0)};
-                    switch (_v27.ctor)
-                    {case "_Tuple2":
-                       switch (_v27._0.ctor)
-                         {case "Just":
-                            switch (_v27._0._0.ctor)
-                              {case "String":
-                                 switch (_v27._1.ctor)
-                                   {case "Just":
-                                      switch (_v27._1._0.ctor)
-                                        {case "String":
-                                           return _U.eq(A3($String.slice,
-                                             0,
-                                             6,
-                                             _v27._1._0._0),
-                                             "image/") ? A2(rendImg,
-                                             _v27._0._0._0,
-                                             j._0) : A2(rendLink,
-                                             _v27._0._0._0,
-                                             j._0);}
-                                        break;}
-                                   return A2(rendLink,
-                                   _v27._0._0._0,
-                                   j._0);}
-                              break;}
-                         break;}
-                    return $Graphecs.renderJson(j);
-                 }();}
+            var _v29 = {ctor: "_Tuple2"
+                       ,_0: A2(jsonGet,j,"href")
+                       ,_1: A2(jsonGet,j,"type")};
+            switch (_v29.ctor)
+            {case "_Tuple2":
+               switch (_v29._0.ctor)
+                 {case "Just":
+                    switch (_v29._0._0.ctor)
+                      {case "String":
+                         switch (_v29._1.ctor)
+                           {case "Just":
+                              switch (_v29._1._0.ctor)
+                                {case "String":
+                                   return _U.eq(A3($String.slice,
+                                     0,
+                                     6,
+                                     _v29._1._0._0),
+                                     "image/") ? rendImg(_v29._0._0._0) : rendLink(_v29._0._0._0);}
+                                break;}
+                           return rendLink(_v29._0._0._0);}
+                      break;}
+                 break;}
             return $Graphecs.renderJson(j);
          }();
       }();
@@ -363,19 +380,19 @@ Elm.Ting.make = function (_elm) {
    c,
    d) {
       return function () {
-         var _v36 = A2($Dict.get,a,d);
-         switch (_v36.ctor)
+         var _v38 = A2($Dict.get,a,d);
+         switch (_v38.ctor)
          {case "Just":
-            switch (_v36._0.ctor)
+            switch (_v38._0.ctor)
               {case "Act":
                  return A3($Dict.insert,
                    a,
                    A2(Act,
-                   _v36._0._0,
+                   _v38._0._0,
                    A3($Dict.insert,
                    f,
                    c,
-                   _v36._0._1)),
+                   _v38._0._1)),
                    d);}
               break;}
          return A3($Dict.insert,
@@ -390,16 +407,16 @@ Elm.Ting.make = function (_elm) {
    m,
    d) {
       return function () {
-         var _v40 = A2($Dict.get,a,d);
-         switch (_v40.ctor)
+         var _v42 = A2($Dict.get,a,d);
+         switch (_v42.ctor)
          {case "Just":
-            switch (_v40._0.ctor)
+            switch (_v42._0.ctor)
               {case "Act":
                  return A3($Dict.insert,
                    a,
                    A2(Act,
                    $Maybe.Just(m),
-                   _v40._0._1),
+                   _v42._0._1),
                    d);}
               break;}
          return A3($Dict.insert,
@@ -430,7 +447,7 @@ Elm.Ting.make = function (_elm) {
                  x._1,
                  d);}
             _E.Case($moduleName,
-            "between lines 69 and 73");
+            "between lines 74 and 78");
          }();
       });
       return A3($Signal.foldp,
@@ -439,7 +456,7 @@ Elm.Ting.make = function (_elm) {
       A2($Signal.merge,
       actionFieldInp.signal,
       A2($Signal.lift,
-      function (_v50) {
+      function (_v52) {
          return function () {
             return Reset;
          }();
@@ -481,47 +498,56 @@ Elm.Ting.make = function (_elm) {
    href,
    method1,
    ref,
-   _v52,
-   d) {
+   _v54,
+   j) {
       return function () {
-         switch (_v52.ctor)
+         switch (_v54.ctor)
          {case "Act":
             return function () {
+                 var drop = A2($Graphics$Element.width,
+                 80,
+                 A2($Graphics$Element.height,
+                 20,
+                 A2($Graphics$Input.dropDown,
+                 actionFieldInp.handle,
+                 methods(name))));
                  var method = function () {
-                    var _v56 = {ctor: "_Tuple2"
+                    var _v58 = {ctor: "_Tuple2"
                                ,_0: method1
-                               ,_1: _v52._0};
-                    switch (_v56.ctor)
+                               ,_1: _v54._0};
+                    switch (_v58.ctor)
                     {case "_Tuple2":
-                       switch (_v56._0.ctor)
+                       switch (_v58._0.ctor)
                          {case "Just":
-                            return _v56._0._0;}
-                         switch (_v56._1.ctor)
+                            return _v58._0._0;}
+                         switch (_v58._1.ctor)
                          {case "Just":
-                            return _v56._1._0;}
+                            return _v58._1._0;}
                          return "GET";}
                     _E.Case($moduleName,
-                    "between lines 176 and 180");
+                    "between lines 187 and 191");
                  }();
-                 var button = A3($Graphics$Input.button,
+                 var button = A2($Graphics$Element.width,
+                 80,
+                 A2($Graphics$Element.height,
+                 20,
+                 A3($Graphics$Input.button,
                  handle,
                  $Maybe.Just(A4(req,
                  $Maybe.Just(ref),
                  href,
                  method,
-                 bodyFrom(_v52._1))),
-                 "boop");
-                 var rendAct = function () {
+                 bodyFrom(_v54._1))),
+                 method)));
+                 var renderedAct = function () {
                     switch (method1.ctor)
                     {case "Just": return button;
                        case "Nothing":
-                       return A2($Graphics$Element.above,
-                         A2($Graphics$Input.dropDown,
-                         actionFieldInp.handle,
-                         methods(name)),
+                       return A2($Graphics$Element.beside,
+                         drop,
                          button);}
                     _E.Case($moduleName,
-                    "between lines 181 and 185");
+                    "between lines 201 and 204");
                  }();
                  var content = A2($Graphics$Input$Field.Content,
                  "",
@@ -538,32 +564,25 @@ Elm.Ting.make = function (_elm) {
                     A3($Dict.getOrElse,
                     content,
                     s,
-                    _v52._1));
+                    _v54._1));
                  };
                  var rendField = function (f) {
                     return function () {
-                       switch (f.ctor)
-                       {case "Object":
-                          return function () {
-                               var _v65 = A2($Dict.get,
-                               "name",
-                               f._0);
-                               switch (_v65.ctor)
-                               {case "Just":
-                                  switch (_v65._0.ctor)
-                                    {case "String":
-                                       return {ctor: "_Tuple2"
-                                              ,_0: $Text.plainText($List.concat(_L.fromArray([_v65._0._0
-                                                                                             ,": "])))
-                                              ,_1: field(_v65._0._0)};}
-                                    break;}
+                       var _v65 = A2(jsonGet,
+                       f,
+                       "name");
+                       switch (_v65.ctor)
+                       {case "Just":
+                          switch (_v65._0.ctor)
+                            {case "String":
                                return {ctor: "_Tuple2"
-                                      ,_0: $Text.plainText("???")
-                                      ,_1: $Graphecs.renderJson(f)};
-                            }();}
+                                      ,_0: $List.concat(_L.fromArray([_v65._0._0
+                                                                     ,": "]))
+                                      ,_1: $Graphecs.Labeled(field(_v65._0._0))};}
+                            break;}
                        return {ctor: "_Tuple2"
-                              ,_0: $Text.plainText("weird json :|")
-                              ,_1: $Graphecs.renderJson(f)};
+                              ,_0: "???"
+                              ,_1: $Graphecs.Labeled($Graphecs.renderJson(f))};
                     }();
                  };
                  var rendFields = function (fs) {
@@ -578,44 +597,64 @@ Elm.Ting.make = function (_elm) {
                        return $Graphecs.renderJson(fs);
                     }();
                  };
-                 return A2($Graphics$Element.beside,
-                 A2($Graphecs.renderJsonBut,
-                 _L.fromArray([{ctor: "_Tuple2"
-                               ,_0: "title"
-                               ,_1: $Graphecs.renderJson}
-                              ,{ctor: "_Tuple2"
-                               ,_0: "name"
-                               ,_1: $Graphecs.renderJson}
-                              ,{ctor: "_Tuple2"
-                               ,_0: "href"
-                               ,_1: $Graphecs.renderJson}
-                              ,{ctor: "_Tuple2"
-                               ,_0: "method"
-                               ,_1: $Graphecs.renderJson}
-                              ,{ctor: "_Tuple2"
-                               ,_0: "fields"
-                               ,_1: rendFields}]),
-                 $Json.Object(d)),
-                 rendAct);
+                 var renderL = _L.fromArray([{ctor: "_Tuple2"
+                                             ,_0: "title"
+                                             ,_1: renderTitle}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: "name"
+                                             ,_1: renderJ}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: "href"
+                                             ,_1: renderJ}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: "method"
+                                             ,_1: function (_v70) {
+                                                return function () {
+                                                   return $Graphecs.Only($Graphics$Element.empty);
+                                                }();
+                                             }}
+                                            ,{ctor: "_Tuple2"
+                                             ,_0: "fields"
+                                             ,_1: function ($) {
+                                                return $Graphecs.Labeled(rendFields($));
+                                             }}]);
+                 var rendered = function () {
+                    var _v72 = A2($Graphecs.renderJsonHalp,
+                    renderL,
+                    j);
+                    switch (_v72.ctor)
+                    {case "Just":
+                       return $Graphecs.renderKV(_v72._0);}
+                    return $Graphecs.renderJson(j);
+                 }();
+                 return A2($Graphecs.bordered,
+                 $Color.darkGray,
+                 A2($Graphics$Element.above,
+                 rendered,
+                 A4($Graphics$Element.container,
+                 $Graphics$Element.widthOf(rendered),
+                 $Graphics$Element.heightOf(renderedAct) + 4,
+                 $Graphics$Element.midRight,
+                 renderedAct)));
               }();}
          _E.Case($moduleName,
-         "between lines 166 and 191");
+         "between lines 179 and 208");
       }();
    });
    var renderActions = F3(function (afs,
    ref,
    j) {
       return function () {
-         var method = function (d) {
+         var method = function (a) {
             return function () {
-               var _v70 = A2($Dict.get,
-               "method",
-               d);
-               switch (_v70.ctor)
+               var _v74 = A2(jsonGet,
+               a,
+               "method");
+               switch (_v74.ctor)
                {case "Just":
-                  switch (_v70._0.ctor)
+                  switch (_v74._0.ctor)
                     {case "String":
-                       return $Maybe.Just(_v70._0._0);}
+                       return $Maybe.Just(_v74._0._0);}
                     break;}
                return $Maybe.Nothing;
             }();
@@ -623,43 +662,35 @@ Elm.Ting.make = function (_elm) {
          var noAct = A2(Act,
          $Maybe.Nothing,
          $Dict.empty);
-         var rendD = function (d) {
+         var rend = function (a) {
             return function () {
-               var _v73 = {ctor: "_Tuple2"
-                          ,_0: A2($Dict.get,"name",d)
-                          ,_1: A2($Dict.get,"href",d)};
-               switch (_v73.ctor)
+               var _v77 = {ctor: "_Tuple2"
+                          ,_0: A2(jsonGet,a,"name")
+                          ,_1: A2(jsonGet,a,"href")};
+               switch (_v77.ctor)
                {case "_Tuple2":
-                  switch (_v73._0.ctor)
+                  switch (_v77._0.ctor)
                     {case "Just":
-                       switch (_v73._0._0.ctor)
+                       switch (_v77._0._0.ctor)
                          {case "String":
-                            switch (_v73._1.ctor)
+                            switch (_v77._1.ctor)
                               {case "Just":
-                                 switch (_v73._1._0.ctor)
+                                 switch (_v77._1._0.ctor)
                                    {case "String":
                                       return A6(renderAction,
-                                        _v73._0._0._0,
-                                        _v73._1._0._0,
-                                        method(d),
+                                        _v77._0._0._0,
+                                        _v77._1._0._0,
+                                        method(a),
                                         ref,
                                         A3($Dict.getOrElse,
                                         noAct,
-                                        _v73._0._0._0,
+                                        _v77._0._0._0,
                                         afs),
-                                        d);}
+                                        a);}
                                    break;}
                               break;}
                          break;}
                     break;}
-               return $Graphecs.renderJson($Json.Object(d));
-            }();
-         };
-         var rend = function (a) {
-            return function () {
-               switch (a.ctor)
-               {case "Object":
-                  return rendD(a._0);}
                return $Graphecs.renderJson(a);
             }();
          };
@@ -679,30 +710,34 @@ Elm.Ting.make = function (_elm) {
       return function () {
          var renderl = _L.fromArray([{ctor: "_Tuple2"
                                      ,_0: "title"
-                                     ,_1: $Graphecs.renderJson}
+                                     ,_1: renderTitle}
                                     ,{ctor: "_Tuple2"
                                      ,_0: "properties"
-                                     ,_1: $Graphecs.renderJsonBut(_L.fromArray([{ctor: "_Tuple2"
-                                                                                ,_0: "name"
-                                                                                ,_1: $Graphecs.renderJson}
-                                                                               ,{ctor: "_Tuple2"
-                                                                                ,_0: "description"
-                                                                                ,_1: $Graphecs.renderJson}]))}
+                                     ,_1: renderJBut(_L.fromArray([{ctor: "_Tuple2"
+                                                                   ,_0: "name"
+                                                                   ,_1: renderJ}
+                                                                  ,{ctor: "_Tuple2"
+                                                                   ,_0: "description"
+                                                                   ,_1: renderJ}]))}
                                     ,{ctor: "_Tuple2"
                                      ,_0: "links"
-                                     ,_1: renderLinks(ref)}
+                                     ,_1: function ($) {
+                                        return $Graphecs.Labeled(renderLinks(ref)($));
+                                     }}
                                     ,{ctor: "_Tuple2"
                                      ,_0: "actions"
-                                     ,_1: A2(renderActions,
-                                     fs,
-                                     ref)}]);
+                                     ,_1: function ($) {
+                                        return $Graphecs.Labeled(A2(renderActions,
+                                        fs,
+                                        ref)($));
+                                     }}]);
          return function () {
-            var _v84 = $Json.fromString(s);
-            switch (_v84.ctor)
+            var _v86 = $Json.fromString(s);
+            switch (_v86.ctor)
             {case "Just":
                return A2($Graphecs.renderJsonBut,
                  renderl,
-                 _v84._0);}
+                 _v86._0);}
             return function () {
                var e = $Text.plainText(s);
                return _U.cmp($Graphics$Element.widthOf(e),
@@ -738,7 +773,7 @@ Elm.Ting.make = function (_elm) {
             case "Nothing":
             return $Graphics$Element.empty;}
          _E.Case($moduleName,
-         "between lines 101 and 106");
+         "between lines 116 and 121");
       }();
    });
    var main = function () {
@@ -793,6 +828,7 @@ Elm.Ting.make = function (_elm) {
                       ,getReq: getReq
                       ,req: req
                       ,bodyFrom: bodyFrom
+                      ,jsonGet: jsonGet
                       ,binput: binput
                       ,b: b
                       ,things: things
@@ -803,6 +839,9 @@ Elm.Ting.make = function (_elm) {
                       ,insField: insField
                       ,insMethod: insMethod
                       ,actionFieldSig: actionFieldSig
+                      ,renderJ: renderJ
+                      ,renderJBut: renderJBut
+                      ,renderTitle: renderTitle
                       ,strToGUI: strToGUI
                       ,rendStatus: rendStatus
                       ,respToGUI: respToGUI
@@ -893,36 +932,64 @@ Elm.Graphecs.make = function (_elm) {
    };
    var renderKV = function (l) {
       return function () {
-         var maxW = A3($List.foldl,
-         F2(function (_v0,n) {
+         var maxOf = F2(function (_v0,
+         n) {
             return function () {
                switch (_v0.ctor)
                {case "_Tuple2":
-                  return A2($Basics.max,
-                    $Graphics$Element.widthOf(_v0._0),
-                    n);}
+                  return function () {
+                       switch (_v0._1.ctor)
+                       {case "Labeled":
+                          return A2($Basics.max,
+                            $Graphics$Element.widthOf(_v0._0),
+                            n);}
+                       return n;
+                    }();}
                _E.Case($moduleName,
-               "on line 36, column 45 to 62");
+               "between lines 38 and 41");
             }();
-         }),
-         0,
-         l);
-         var foo = function (_v4) {
+         });
+         var renderedL = A2($List.map,
+         function (_v6) {
             return function () {
-               switch (_v4.ctor)
+               switch (_v6.ctor)
                {case "_Tuple2":
-                  return A2($Graphics$Element.beside,
-                    A2(leftAl,maxW,_v4._0),
-                    _v4._1);}
+                  return {ctor: "_Tuple2"
+                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v6._0
+                                                                        ,":  "])))
+                         ,_1: _v6._1};}
                _E.Case($moduleName,
-               "on line 37, column 33 to 59");
+               "on line 37, column 47 to 79");
+            }();
+         },
+         l);
+         var maxW = A3($List.foldl,
+         maxOf,
+         0,
+         renderedL);
+         var foo = function (_v10) {
+            return function () {
+               switch (_v10.ctor)
+               {case "_Tuple2":
+                  return function () {
+                       switch (_v10._1.ctor)
+                       {case "Labeled":
+                          return A2($Graphics$Element.beside,
+                            A2(leftAl,maxW,_v10._0),
+                            _v10._1._0);
+                          case "Only": return _v10._1._0;}
+                       _E.Case($moduleName,
+                       "between lines 42 and 45");
+                    }();}
+               _E.Case($moduleName,
+               "between lines 42 and 45");
             }();
          };
          return A2($Graphics$Element.flow,
          $Graphics$Element.down,
          A2($List.map,
          spacey,
-         A2($List.map,foo,l)));
+         A2($List.map,foo,renderedL)));
       }();
    };
    var bordered = F2(function (c,
@@ -931,6 +998,39 @@ Elm.Graphecs.make = function (_elm) {
       c,
       spacey(e));
    });
+   var butt = F3(function (h,v,e) {
+      return A5($Graphics$Input.customButton,
+      h,
+      v,
+      A2(bordered,$Color.lightBlue,e),
+      A2(bordered,$Color.blue,e),
+      A2(bordered,$Color.darkBlue,e));
+   });
+   var Only = function (a) {
+      return {ctor: "Only",_0: a};
+   };
+   var Labeled = function (a) {
+      return {ctor: "Labeled"
+             ,_0: a};
+   };
+   var renderD = function (d) {
+      return function () {
+         var render = function (_v17) {
+            return function () {
+               switch (_v17.ctor)
+               {case "_Tuple2":
+                  return {ctor: "_Tuple2"
+                         ,_0: _v17._0
+                         ,_1: Labeled(renderJson(_v17._1))};}
+               _E.Case($moduleName,
+               "on line 33, column 34 to 59");
+            }();
+         };
+         return A2($List.map,
+         render,
+         $Dict.toList(d));
+      }();
+   };
    var renderJson = function (x) {
       return function () {
          switch (x.ctor)
@@ -946,13 +1046,13 @@ Elm.Graphecs.make = function (_elm) {
             return $Text.plainText($String.show(x._0));
             case "Object":
             return function () {
-                 var _v14 = renderD(x._0);
-                 switch (_v14.ctor)
+                 var _v27 = renderD(x._0);
+                 switch (_v27.ctor)
                  {case "[]":
                     return $Graphics$Element.empty;}
                  return A2(bordered,
                  $Color.darkGrey,
-                 renderKV(_v14));
+                 renderKV(_v27));
               }();
             case "String":
             return function () {
@@ -963,67 +1063,47 @@ Elm.Graphecs.make = function (_elm) {
                  e) : e;
               }();}
          _E.Case($moduleName,
-         "between lines 20 and 29");
+         "between lines 21 and 30");
       }();
    };
-   var renderD = function (d) {
-      return function () {
-         var render = function (_v15) {
-            return function () {
-               switch (_v15.ctor)
-               {case "_Tuple2":
-                  return {ctor: "_Tuple2"
-                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v15._0
-                                                                        ,": "])))
-                         ,_1: renderJson(_v15._1)};}
-               _E.Case($moduleName,
-               "on line 32, column 34 to 76");
-            }();
-         };
-         return A2($List.map,
-         render,
-         $Dict.toList(d));
-      }();
-   };
-   var renderJsonBut = F2(function (l,
+   var renderJsonHalp = F2(function (l,
    j) {
       return function () {
-         var render = function (_v19) {
+         var render = function (_v28) {
             return function () {
-               switch (_v19.ctor)
+               switch (_v28.ctor)
                {case "_Tuple3":
                   return {ctor: "_Tuple2"
-                         ,_0: $Text.plainText($List.concat(_L.fromArray([_v19._0
-                                                                        ,": "])))
-                         ,_1: _v19._1(_v19._2)};}
+                         ,_0: _v28._0
+                         ,_1: _v28._1(_v28._2)};}
                _E.Case($moduleName,
-               "on line 47, column 29 to 62");
+               "on line 59, column 29 to 35");
             }();
          };
          var consDKV = F3(function (d,
-         _v24,
+         _v33,
          kvs) {
             return function () {
-               switch (_v24.ctor)
+               switch (_v33.ctor)
                {case "_Tuple2":
                   return function () {
-                       var _v28 = A2($Dict.get,
-                       _v24._0,
+                       var _v37 = A2($Dict.get,
+                       _v33._0,
                        d);
-                       switch (_v28.ctor)
+                       switch (_v37.ctor)
                        {case "Just":
                           return A2($List._op["::"],
                             {ctor: "_Tuple3"
-                            ,_0: _v24._0
-                            ,_1: _v24._1
-                            ,_2: _v28._0},
+                            ,_0: _v33._0
+                            ,_1: _v33._1
+                            ,_2: _v37._0},
                             kvs);
                           case "Nothing": return kvs;}
                        _E.Case($moduleName,
-                       "between lines 43 and 46");
+                       "between lines 55 and 58");
                     }();}
                _E.Case($moduleName,
-               "between lines 43 and 46");
+               "between lines 55 and 58");
             }();
          });
          var keyVals = F2(function (d,
@@ -1043,27 +1123,33 @@ Elm.Graphecs.make = function (_elm) {
          return function () {
             switch (j.ctor)
             {case "Object":
-               return A2(bordered,
-                 $Color.darkGray,
-                 renderKV($List.concat(_L.fromArray([A2($List.map,
-                                                    render,
-                                                    A2(keyVals,j._0,l))
-                                                    ,renderD(A2(remove,
-                                                    j._0,
-                                                    l))]))));}
-            return renderJson(j);
+               return $Maybe.Just($List.concat(_L.fromArray([A2($List.map,
+                                                            render,
+                                                            A2(keyVals,j._0,l))
+                                                            ,renderD(A2(remove,
+                                                            j._0,
+                                                            l))])));}
+            return $Maybe.Nothing;
          }();
       }();
    });
-   var butt = F3(function (h,v,e) {
-      return A5($Graphics$Input.customButton,
-      h,
-      v,
-      A2(bordered,$Color.lightBlue,e),
-      A2(bordered,$Color.blue,e),
-      A2(bordered,$Color.darkBlue,e));
+   var renderJsonBut = F2(function (l,
+   j) {
+      return function () {
+         var _v41 = A2(renderJsonHalp,
+         l,
+         j);
+         switch (_v41.ctor)
+         {case "Just":
+            return A2(bordered,
+              $Color.darkGray,
+              renderKV(_v41._0));}
+         return renderJson(j);
+      }();
    });
    _elm.Graphecs.values = {_op: _op
+                          ,Labeled: Labeled
+                          ,Only: Only
                           ,spacec: spacec
                           ,spacey: spacey
                           ,bordered: bordered
@@ -1071,6 +1157,7 @@ Elm.Graphecs.make = function (_elm) {
                           ,renderD: renderD
                           ,renderKV: renderKV
                           ,renderJsonBut: renderJsonBut
+                          ,renderJsonHalp: renderJsonHalp
                           ,butt: butt
                           ,makeField: makeField
                           ,centered: centered
