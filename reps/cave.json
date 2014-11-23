@@ -7,6 +7,6 @@
    },
     "links": [
       { "rel": [ "self" ], "href": "self" },
-      { "rel": [ "move", "west" ], "title": "Go west to the brook", "href": "brook" }
+      { "rel": [ "move", "west" ], "title": "Go west to the brook.", "href": "brook" }
     ]
 }

@@ -213,7 +213,8 @@ function toHtml(srn) {
 
     for (var i = 0, len = links.length; i < len; i++) {
       alink = links[i]; 
-      s += '<li>' + '<a href="' + alink.href + '">' + alink.rel + '</a>' + '</li>';
+      var linkText = alink.title || alink.rel;
+      s += '<li>' + '<a href="' + alink.href + '">' + linkText + '</a>' + '</li>';
     }
 
     s += '</ul>';
@@ -365,7 +366,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "north" ], "title": "Follow the brook north", "href": alink("brook") }  
+      { "rel": [ "move", "north" ], "title": "Follow the brook north.", "href": alink("brook") }  
     ]
   };
 
@@ -385,7 +386,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     else {
       siren.links.push({
         "rel": [ "look" ], 
-        "title": "Look at the otter", 
+        "title": "Look at the otter.", 
         "href": alink('otter')
       });
     }
@@ -395,7 +396,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
 
     var row = { 
       "rel": [ "move" ], 
-      "title": "Row to the island", 
+      "title": "Row to the island.", 
       "href": alink('island') 
     };
 
@@ -781,9 +782,9 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     links.push(look_mirror(mrr));
   }
 
-  var desc = "You're in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There's a door to the north and to the west.";
+  var desc = "You're in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There are doors to the north and to the west.";
   if (mirror_actions.length === 0) {
-    desc = "You're in a room with a single mirror. There's a door to the north and to the west.";
+    desc = "You're in a room with a single mirror. There are doors to the north and to the west.";
     var enter_action = { 
       "name": "enter-mirror-" + adv_state.unbreakable,
       "title": "Enter the mirror!",
@@ -795,8 +796,8 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
 
   links.unshift(
     { "rel": [ "self" ], "href": self_link },
-    { "rel": [ "move", "north" ], "href": alink("room") },
-    { "rel": [ "move", "west" ], "href": alink("hall") });
+    { "rel": [ "move", "north" ], "title": "Go north.", "href": alink("room") },
+    { "rel": [ "move", "west" ], "title": "Go east.", "href": alink("hall") });
 
   var siren = { "class": [ "location" ],
     "title": "The Mirror Room",
