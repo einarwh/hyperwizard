@@ -8,6 +8,7 @@
     "links": [
       { "rel": [ "self" ], "href": "self" },
       { "rel": [ "move" ], "title": "Row back to the shore.", "href": "lake" },
-      { "rel": [ "look" ], "title": "Read the sign.", "href": "sign" }
+      { "rel": [ "look" ], "title": "Read the sign.", "href": "sign" },
+      { "rel": [ "view" ], "href": "island.png", "type": "image/png" }
     ]
 }
