@@ -8,13 +8,23 @@ app.use('/images', express.static(__dirname + '/images'));
 app.use(express.urlencoded());
 app.use(express.json());
 
-String.prototype.reverse = function () {
-  return this.split("").reverse().join("");
-};
+if (typeof String.prototype.reverse !== 'function') {
+  String.prototype.reverse = function () {
+    return this.split("").reverse().join("");
+  };
+}
 
-String.prototype.endsWith = function(suffix) {
+if (typeof String.prototype.startsWith !== 'function') {
+  String.prototype.startsWith = function (str) {
+    return this.lastIndexOf(str, 0) === 0
+  };
+}
+
+if (typeof String.prototype.endsWith !== 'function') {
+  String.prototype.endsWith = function (suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
+  };
+}
 
 var adventures = {};
 var masterWizardName = "Edsger";
@@ -367,7 +377,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "north" ], "title": "Follow the brook north.", "href": alink("brook") }  
+      { "rel": [ "move", "north" ], "title": "Follow the brook north.", "href": alink("brook") }
     ]
   };
 
@@ -727,7 +737,8 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "previous" ], "href": alink('mirrors') } 
+      { "rel": [ "previous" ], "href": alink('mirrors') },
+      { "rel": [ "view" ], "href": imglink('mirror.png'), "type": "image/png" }
     ]
   };
 
@@ -929,10 +940,15 @@ app.get('/hywit/:adv_id/room', function(req, res){
     ]
   };
 
+  var roomImage = { "rel": [ "view" ], "href": imglink('room-roof.png'), "type": "image/png" };
+
   if (adv_state.room) {
+    roomImage = { "rel": [ "view" ], "href": imglink('room-floor.png'), "type": "image/png" };
     siren.properties.description = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
     siren.links.push({ "rel": [ "move", "down" ], "href": alink("study"), "title": "Enter the hole in the floor." });
   }
+  
+  siren.links.push(roomImage);
 
   toResponse(req, res, siren);
 });
@@ -972,7 +988,8 @@ app.get('/hywit/:adv_id/sign', function(req, res){
     ],
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "previous"], "href": alink("island") }
+      { "rel": [ "previous"], "href": alink("island") },
+      { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" };
     ]
   };
 
@@ -995,7 +1012,8 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "move", "south" ], "href": alink("hill"), "title": "Go south to the hill." },
-      { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." } 
+      { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." },
+      { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" };
     ]
   };
 
@@ -1030,7 +1048,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "previous" ], "href": alink("entrance") },
-      { "rel": [ "view" ], "href": imglink("skull.png"), type: "image/png" }
+      { "rel": [ "view" ], "href": imglink("guardian-skull.png"), type: "image/png" }
     ]
   };
 
@@ -1065,7 +1083,8 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
         "description": "The skull shrieks 'Wrong answer', and the red glow in its eyes fades out. ",
       },
       "links": [
-        { "rel": [ "previous" ], "href": alink('entrance') }
+        { "rel": [ "previous" ], "href": alink('entrance') },
+        { "rel": [ "view" ], "href": imglink('guardian-skull.png'), "type": "image/png" };
       ]
     };
 
@@ -1127,7 +1146,8 @@ function turnSign(req, res) {
       ],
       "links": [
         { "rel": [ "self" ], "href": self_link },
-        { "rel": [ "previous"], "href": alink("island") }
+        { "rel": [ "previous"], "href": alink("island") },
+        { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" };
       ]
     };
 
@@ -1240,7 +1260,12 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
           hlink.href = self_link;
         }
         else {
-          hlink.href = alink(hlink.href);
+          if ('String' === typeof hlink.type && hlink.type.startsWith('image/')) {
+            hlink.href = imglink(hlink.href);
+          }
+          else {
+            hlink.href = alink(hlink.href);
+          }
         }
       }  
     }
