@@ -203,19 +203,29 @@ function toHtml(srn) {
     s += '</div>'; 
   }
 
-  s += "<div>";
   
-  s += '<p class="name">' + props.name + '</p>';
-  s += '<p class="description">' + props.description + '</p>';
-  var keys = Object.keys(props);
-  for (var k = 0; k < keys.length; k++) {
-    var propname = keys[k];
-    if (propname !== 'name' && propname !== 'description') {
-      s += '<p class="' + propname + '">' + propname + ": " + props[propname] + '</p>';
+  if ('undefined' !== typeof props) {
+    s += "<div>";
+    s += '<p class="name">' + props.name + '</p>';
+    s += '<p class="description">' + props.description + '</p>';
+    var keys = Object.keys(props);
+    for (var k = 0; k < keys.length; k++) {
+      var propname = keys[k];
+      if (propname !== 'name' && propname !== 'description') {
+        s += '<p class="' + propname + '">' + propname + ": " + props[propname] + '</p>';
+      }
     }
+    s += "</div>";
   }
-
-  s += "</div>";
+  else {
+    s += "<div>";
+    var keys = Object.keys(srn);
+    for (var k = 0; k < keys.length; k++) {
+      var propname = keys[k];
+      s += '<p class="' + propname + '">' + srn[propname] + '</p>';
+    }
+    s += "</div>";
+  }
 
   if ('undefined' !== typeof links) {
     s += '<div class="links">';
@@ -308,26 +318,29 @@ app.get('/hywit/void', function(req, res) {
     return;
   }
 	var siren = { 
-  "title": "The Magical Void",
-  "class": [ "location" ],
-  "properties": { 
+    "title": "The Magical Void",
+    "class": [ "location" ],
+    "properties": { 
       "name": "The Magical Void", 
       "description": "You\'re in The Magical Void, a place beyond space and time. This is where adventures begin.",
-  },
-  "actions": [
-    { "name": "start-adventure", 
-      "method": "POST",
-      "title": "Start adventure",
-      "href": hylink('void'),
-      "fields": [
-        { "name": "name", "type": "text" },
-        { "name": "class", "type": "text" },
-        { "name": "race", "type": "text" }
-      ] }
-  ],
-  "links": [
-    { "rel": [ "self" ], "href": hylink('void') }
-  ]
+    },
+    "actions": [
+      {   
+        "name": "start-adventure", 
+        "method": "POST",
+        "title": "Start adventure",
+        "href": hylink('void'),
+        "fields": [
+          { "name": "name", "type": "text" },
+          { "name": "class", "type": "text" },
+          { "name": "race", "type": "text" }
+        ] 
+      }
+    ],
+    "links": [
+      { "rel": [ "self" ], "href": hylink('void') },
+      { "rel": [ "view" ], "href": imglink('magical-void.png'), "type": "image/png" }
+    ]
   };
 
   toResponse(req, res, siren);
