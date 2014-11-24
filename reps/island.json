@@ -1,8 +1,8 @@
 {
-    "title": "The Lake",
+    "title": "The Island",
     "class": [ "location" ],
     "properties": { 
-      "name": "The Lake", 
+      "name": "The Island", 
       "description": "You're standing on the island. A boat is tied to a pole. There's a wooden sign here."
     },
     "links": [
