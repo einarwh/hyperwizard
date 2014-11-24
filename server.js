@@ -1260,7 +1260,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
           hlink.href = self_link;
         }
         else {
-          if ('String' === typeof hlink.type && hlink.type.startsWith('image/')) {
+          if ('string' === typeof hlink.type && hlink.type.startsWith('image/')) {
             hlink.href = imglink(hlink.href);
           }
           else {
