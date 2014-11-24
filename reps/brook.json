@@ -9,6 +9,7 @@
       { "rel": [ "self" ], "href": "self" },
       { "rel": [ "move", "west" ], "title": "Go west to the hill.", "href": "hill" },
       { "rel": [ "move", "north" ], "title": "Go north to the cave.", "href": "cave" },
-      { "rel": [ "move", "south" ], "title": "Follow the brook south.", "href": "lake" }
+      { "rel": [ "move", "south" ], "title": "Follow the brook south.", "href": "lake" },
+      { "rel": [ "view" ], "href": "brook.png", "type": "image/png" }
     ]
 }
