@@ -989,7 +989,7 @@ app.get('/hywit/:adv_id/sign', function(req, res){
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "previous"], "href": alink("island") },
-      { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" };
+      { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" }
     ]
   };
 
@@ -1013,7 +1013,7 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "move", "south" ], "href": alink("hill"), "title": "Go south to the hill." },
       { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." },
-      { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" };
+      { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" }
     ]
   };
 
@@ -1084,7 +1084,7 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
       },
       "links": [
         { "rel": [ "previous" ], "href": alink('entrance') },
-        { "rel": [ "view" ], "href": imglink('guardian-skull.png'), "type": "image/png" };
+        { "rel": [ "view" ], "href": imglink('guardian-skull.png'), "type": "image/png" }
       ]
     };
 
@@ -1147,7 +1147,7 @@ function turnSign(req, res) {
       "links": [
         { "rel": [ "self" ], "href": self_link },
         { "rel": [ "previous"], "href": alink("island") },
-        { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" };
+        { "rel": [ "view" ], "href": imglink('sign.png'), "type": "image/png" }
       ]
     };
 
