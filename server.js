@@ -822,7 +822,9 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   links.unshift(
     { "rel": [ "self" ], "href": self_link },
     { "rel": [ "move", "north" ], "title": "Go north.", "href": alink("room") },
-    { "rel": [ "move", "west" ], "title": "Go east.", "href": alink("hall") });
+    { "rel": [ "move", "west" ], "title": "Go east.", "href": alink("hall") },
+    { "rel": [ "view" ], "href": imglink("mirrors.png"), "type": "image/png" }
+  );
 
   var siren = { "class": [ "location" ],
     "title": "The Mirror Room",
