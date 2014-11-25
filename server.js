@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 var fs = require('fs');
 
-app.use('/fudd', express.static(__dirname + '/fudd'));
+app.use('/elmer', express.static(__dirname + '/elmer'));
 app.use('/images', express.static(__dirname + '/images'));
 
 app.use(express.urlencoded());
