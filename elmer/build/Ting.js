@@ -264,14 +264,13 @@ Elm.Ting.make = function (_elm) {
                        switch (_v15._0)
                        {case "Location":
                           return {ctor: "_Tuple2"
-                                 ,_0: "Location: "
+                                 ,_0: _v15._0
                                  ,_1: $Graphecs.Labeled(A3(liink,
                                  ref,
                                  _v15._1,
                                  _v15._1))};}
                        return {ctor: "_Tuple2"
-                              ,_0: $List.concat(_L.fromArray([_v15._0
-                                                             ,": "]))
+                              ,_0: _v15._0
                               ,_1: $Graphecs.Labeled($Text.plainText(_v15._1))};
                     }();}
                _E.Case($moduleName,
@@ -578,13 +577,12 @@ Elm.Ting.make = function (_elm) {
                           switch (_v65._0.ctor)
                             {case "String":
                                return {ctor: "_Tuple2"
-                                      ,_0: $List.concat(_L.fromArray([_v65._0._0
-                                                                     ,": "]))
+                                      ,_0: _v65._0._0
                                       ,_1: $Graphecs.Labeled(field(_v65._0._0))};}
                             break;}
                        return {ctor: "_Tuple2"
-                              ,_0: "???"
-                              ,_1: $Graphecs.Labeled($Graphecs.renderJson(f))};
+                              ,_0: ""
+                              ,_1: $Graphecs.Only($Graphecs.renderJson(f))};
                     }();
                  };
                  var rendFields = function (fs) {
