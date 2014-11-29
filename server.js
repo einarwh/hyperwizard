@@ -123,6 +123,14 @@ function acceptsHtml(req) {
   return req.headers.accept.indexOf("text/html") >= 0;
 }
 
+function acceptsJson(req) {
+  return req.headers.accept.indexOf("application/json") >= 0;
+}
+
+function acceptsSiren(req) {
+  return req.headers.accept.indexOf("application/vnd.siren+json") >= 0;
+}
+
 function toActionForm(act) {
   var s = "";
   var field;
@@ -272,8 +280,14 @@ function toResponse(req, res, siren, statusCode) {
     transform = toHtml;
   }
 
-  res.contentType(ct);
-  res.status(sc).send(transform(siren));
+  if (acceptsSiren(req) || acceptsJson(req)) {
+    res.contentType(ct);
+    res.status(sc).send(transform(siren));
+    return;
+  }
+
+  res.contentType("text/plain");
+  res.status(406).send("application/vnd.siren+json\napplication/json\ntext/html");
 }
 
 function toJsonResponse(req, res, siren, statusCode) {
@@ -317,7 +331,7 @@ app.get('/hywit/void', function(req, res) {
     res.send(JSON.stringify(plainJson));
     return;
   }
-	var siren = { 
+  var siren = { 
     "title": "The Magical Void",
     "class": [ "location" ],
     "properties": { 
@@ -734,19 +748,13 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
     return;
   } 
 
-  var desc = "You see a reflection of yourself.";
-
-  if (mirror === adv_state.unbreakable) {
-    desc = "You see a reflection of yourself, upside-down.";
-  }
-
   var self_link = alink('mirrors/' + mirror);
 
   var siren = { "class": [ "location" ],
     "title": "Mirror #" + mirror,
     "properties": { 
       "name": "Mirror #" + mirror, 
-      "description": desc
+      "description": "You see a reflection of yourself."
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
@@ -754,6 +762,19 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
       { "rel": [ "view" ], "href": imglink('mirror.png'), "type": "image/png" }
     ]
   };
+
+  if (mirror === adv_state.unbreakable) {
+    siren.properties.description = "You see a reflection of yourself, upside-down.";
+    if (adv_state.mirrors.length === 1) {
+      var enter_action = { 
+        "name": "enter-mirror",
+        "title": "Enter the mirror!",
+        "method": "POST",
+        "href": alink("mirrors/" + adv_state.unbreakable) 
+      };
+      siren.actions = [ enter_action ];
+    }
+  }
 
   toResponse(req, res, siren);
 });
@@ -810,13 +831,13 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   var desc = "You're in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There are doors to the north and to the west.";
   if (mirror_actions.length === 0) {
     desc = "You're in a room with a single mirror. There are doors to the north and to the west.";
-    var enter_action = { 
-      "name": "enter-mirror-" + adv_state.unbreakable,
-      "title": "Enter the mirror!",
-      "method": "POST",
-      "href": alink("mirrors/" + adv_state.unbreakable) 
-    };
-    mirror_actions.push(enter_action);
+    //var enter_action = { 
+    //  "name": "enter-mirror-" + adv_state.unbreakable,
+    //  "title": "Enter the mirror!",
+    //  "method": "POST",
+    //  "href": alink("mirrors/" + adv_state.unbreakable) 
+    //};
+    //mirror_actions.push(enter_action);
   } 
 
   links.unshift(
@@ -832,9 +853,12 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
       "name": "The Mirror Room", 
       "description": desc
     },
-    "actions": mirror_actions,
     "links": links
   };
+
+  if (mirror_actions.length > 0) {
+    siren.actions = mirror_actions;
+  }
 
   toResponse(req, res, siren);
 });

@@ -153,6 +153,10 @@ var findAction = function(self, actionName) {
 
 var lookupAction = function(self, actionId) {
   if (typeof actionId === 'number') {
+    if (self.siren.actions === undefined) {
+      return undefined;
+    }
+
     return self.siren.actions[actionId];
   }
   return findAction(self, actionId);
@@ -254,10 +258,15 @@ exports.do = function(actionName, formData) {
       visit(self, requestData);
     } else {
       var acts = self.siren.actions;
-      console.log('No such action: ' + actionName);
-      console.log('Available actions [' + acts.length + ']:');
-      for (var i = 0, len = acts.length; i < len; i++) {
-        console.log(" - " + prettyjson.render(acts[i].name));
+      if (acts === undefined || acts.length === 0) {
+        console.log('No actions available.');
+      }
+      else {
+        console.log('No such action: ' + actionName);
+        console.log('Available actions [' + acts.length + ']:');
+        for (var i = 0, len = acts.length; i < len; i++) {
+          console.log(" " + i + " : " + prettyjson.render(acts[i].name));
+        }
       }
     }
 };
