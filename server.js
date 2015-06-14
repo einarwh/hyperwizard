@@ -133,7 +133,7 @@ function s4() {
 }
 
 function setFsmImage(dir, imageName) {
-  console.log('SET FSM IMAGE ' + imageName);
+  //console.log('SET FSM IMAGE ' + imageName);
   var pngFile = imageName + ".png";
   var basePath = lepath.join(__dirname, '../hub/fsmwatcher');
   var srcPath = lepath.join(basePath, 'graphs', dir, pngFile);
@@ -302,9 +302,9 @@ function toResponse(req, res, siren, statusCode) {
     transform = toHtml;
   }
 
-//  if (statusCode === 401) {
-//    res.set('WWW-Authenticate', 'Basic realm="tower"');
-//  }
+  if (statusCode === 401) {
+    res.set('WWW-Authenticate', 'Basic realm="tower"');
+  }
 
   if (acceptsSiren(req) || acceptsJson(req)) {
     res.contentType(ct);
@@ -1431,10 +1431,19 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     return advlink(adv_id, relative);
   };
 
-//  if (req.headers.authorization) {
-//    var decodedAuthString = new Buffer(req.headers.authorization, 'base64').toString('ascii');
-//    console.log(decodedAuthString);
-//  }
+  var authorized = false;
+
+  if (req.headers.authorization) {
+    var authHeader = req.headers.authorization;
+    var encodedAuthString = authHeader.substring("Basic ".length);
+    var decodedAuthString = new Buffer(encodedAuthString, 'base64').toString('ascii');
+    var decomp = decodedAuthString.split(':');
+    var username = decomp[0];
+    var password = decomp[1];
+    authorized = (username === 'master') && (password === 'edsger');
+    tryEnterTower(req, res, password);
+    return;
+  }
 
   var self_link = alink('tower');
   var siren = {
@@ -1466,10 +1475,12 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
   }
 
+  setFsmImage('auth', 'auth-401');
+
   toResponse(req, res, siren, 401);
 });
 
-app.post('/hywit/:adv_id/tower', function(req, res) {
+function tryEnterTower(req, res, master) {
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
   
@@ -1481,11 +1492,10 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
-  
-  var master = req.body.master;
 
   if (masterWizardName === master) {
     adv_state.closed = false;
+    setFsmImage('auth', 'auth-200');
     res.status(302).location(alink('hall')).send();
   }
   else {
@@ -1497,13 +1507,20 @@ app.post('/hywit/:adv_id/tower', function(req, res) {
         "description": "The skull shrieks 'Wrong answer', and the red glow in its eyes fades out. ",
       },
       "links": [
+        { "rel": [ "self" ], "href": alink('tower') },
         { "rel": [ "previous" ], "href": alink('entrance') },
         { "rel": [ "view" ], "href": imglink('guardian-skull.png'), "type": "image/png" }
       ]
     };
 
+    setFsmImage('auth', 'auth-403');
+
     toResponse(req, res, siren, 403);
   }
+}
+
+app.post('/hywit/:adv_id/tower', function(req, res) {
+  tryEnterTower(req, res, req.body.master);
 });
 
 function turnSign(req, res) {

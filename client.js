@@ -31,17 +31,17 @@ var sendRequest = function(self, opt, requestMethod) {
       return;
     }
 
-//    if (response.statusCode === 401) {
-//      mem.challenged = true;
-//      mem.auth = undefined;
-//    }
-//    else {
-//      mem.challenged = false;
-//    }
+    if (response.statusCode === 401) {
+      mem.challenged = true;
+      mem.auth = undefined;
+    }
+    else {
+      mem.challenged = false;
+    }
 
-//    if (response.statusCode === 403) {
-//      mem.auth = undefined;
-//    }
+    if (response.statusCode === 403) {
+      mem.auth = undefined;
+    }
 
     if (typeof opt === 'string') {
       self.request = { uri: opt };
@@ -98,9 +98,9 @@ var sendRequest = function(self, opt, requestMethod) {
       resInfo["content-type"] = self.headers["content-type"];
     }
 
-//    if (self.headers["www-authenticate"]) {
-//      resInfo["www-authenticate"] = self.headers["www-authenticate"];
-//    }
+    if (self.headers["www-authenticate"]) {
+      resInfo["www-authenticate"] = self.headers["www-authenticate"];
+    }
 
     var contentType = self.headers["content-type"];
     if (self.body.length > 0 && contentType.startsWith("application/vnd.siren+json")) {
@@ -145,11 +145,19 @@ var visit = function(self, url, accepts) {
     "X-Alt-Referer": self.at
   };
 
-//  if (opt.auth !== undefined) {
-//    opt.headers["Authorization"] = "Basic " + opt.auth;
-//    opt.auth = undefined;
-//    reqInfo.authorization = opt.headers.Authorization;
-//  }
+  if (mem.auth !== undefined) {
+    var authUser = mem.auth.username;
+    var authPass = mem.auth.password;
+    var authString = authUser + ":" + authPass;
+    var encodedAuthString = new Buffer(authString).toString('base64')
+    opt.auth = encodedAuthString;
+  }
+
+  if (opt.auth !== undefined) {
+    opt.headers["Authorization"] = "Basic " + opt.auth;
+    opt.auth = undefined;
+    reqInfo.authorization = opt.headers.Authorization;
+  }
 
   reqInfo.accept = opt.headers.Accept;
 
@@ -229,7 +237,7 @@ exports.download = function(uri, filename) {
 };
 
 exports.to = function(url, accepts) {
-    visit(this, url, accepts);
+  visit(this, url, accepts);
 };
 
 exports.help = function(url) {
@@ -276,16 +284,16 @@ exports.do = function(actionName, formData) {
           defaultMethod = formData;
         }
         else {
-//          if (mem.challenged === true) {
-//            var formDataKeys = Object.keys(formData);
-//            if (formDataKeys.length > 0) {
-//              var authDataKey = formDataKeys[0];
-//              var authDataVal = formData[authDataKey];
-//              var authString = authDataKey + ":" + authDataVal;
-//              var encodedAuthString = new Buffer(authString).toString('base64')
-//              requestData.auth = encodedAuthString;
-//            }
-//          }
+          if (mem.challenged === true) {
+            var formDataKeys = Object.keys(formData);
+            if (formDataKeys.length > 0) {
+              var authDataKey = formDataKeys[0];
+              var authDataVal = formData[authDataKey];
+              var authString = authDataKey + ":" + authDataVal;
+              var encodedAuthString = new Buffer(authString).toString('base64')
+              requestData.auth = encodedAuthString;
+            }
+          }
           requestData.form = formData;
         }
       }
@@ -329,16 +337,21 @@ function outOfBounds(links, linkIndex) {
 }
 
 exports.go = function(linkIndex) {
-    // get url from linkIndex;
-    var self = this;
-    var link = self.siren.links[linkIndex];
-    if (link === undefined) {
-      outOfBounds(self.siren.links, linkIndex);
-      return;
-    }
-    var url = link.href;
-    visit(this, url);
+  // get url from linkIndex;
+  var self = this;
+  var link = self.siren.links[linkIndex];
+  if (link === undefined) {
+    outOfBounds(self.siren.links, linkIndex);
+    return;
+  }
+  var url = link.href;
+
+  visit(this, url);
 };
+
+exports.auth = function(rlm, user, pass) {
+  mem.auth = { realm: rlm, username: user, password: pass };
+}
 
 exports.back = function() {
   if (mem.history.length > 0) {
