@@ -1,6 +1,8 @@
 var express = require('express');
 var app = express();
-var fs = require('fs');
+//var fs = require('fs');
+var fs = require('fs-extra')
+var lepath = require('path');
 
 app.use('/elmer', express.static(__dirname + '/elmer'));
 app.use('/images', express.static(__dirname + '/images'));
@@ -69,7 +71,15 @@ function has_rep(rep) {
   return false;
 }
 
-function init_state(adv_id) {
+function init_state(adv_id, old_state) {
+
+  var bridge = false;
+  var skeleton = false;
+  if (old_state) {
+    bridge = old_state.bridge;
+    skeleton = old_state.skeleton;
+  }
+
   var mirrors = [1, 2, 3, 4, 5, 6, 7];
   var unbreakable = Math.floor((Math.random()*mirrors.length)+1); 
   var state = {
@@ -79,7 +89,10 @@ function init_state(adv_id) {
     "broken_mirrors": [],
     "unbreakable": unbreakable,
     "room": false,
-    "closed": true
+    "closed": true,
+    "bridge": bridge,
+    "skeleton": skeleton,
+    "old_state": old_state
   };
 
   return state;
@@ -117,6 +130,15 @@ function s4() {
   return Math.floor((1 + Math.random()) * 0x10000)
              .toString(16)
              .substring(1);
+}
+
+function setFsmImage(dir, imageName) {
+  console.log('SET FSM IMAGE ' + imageName);
+  var pngFile = imageName + ".png";
+  var basePath = lepath.join(__dirname, '../hub/fsmwatcher');
+  var srcPath = lepath.join(basePath, 'graphs', dir, pngFile);
+  var dstPath = lepath.join(basePath, 'fsmimages', pngFile);
+  fs.copySync(srcPath, dstPath);
 }
 
 function acceptsHtml(req) {
@@ -280,6 +302,10 @@ function toResponse(req, res, siren, statusCode) {
     transform = toHtml;
   }
 
+//  if (statusCode === 401) {
+//    res.set('WWW-Authenticate', 'Basic realm="tower"');
+//  }
+
   if (acceptsSiren(req) || acceptsJson(req)) {
     res.contentType(ct);
     res.status(sc).send(transform(siren));
@@ -381,6 +407,130 @@ app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
   res.status(418).location(alink('hall')).send();
 });
 
+app.get('/hywit/:adv_id/divide', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var self_link = alink('divide');
+  var act = {
+    "name": "pull-lever",
+    "method": "POST",
+    "title": "Pull the lever.",
+    "href": self_link
+  }
+  var siren = {
+    "title": "The Great Divide",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Great Divide", 
+      "description": "You're standing on the edge of a great divide. You can see a rusty lever."
+    },
+    "actions": [ act ],
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "south" ], "title": "Go south to the hill.", "href": alink("hill") }
+    ]
+  };
+
+  if (adv_state.bridge) {
+    siren.properties.description = siren.properties.description + " There is a bridge crossing the divide.";
+    if (adv_state.skeleton) {
+      siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
+    } else {
+      siren.links.push({ "rel": [ "move" ], "title": "Cross the bridge.", "href": alink('bridge') });
+    }
+  }
+  else {
+    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";    
+    if (adv_state.skeleton) {
+      siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
+    } 
+  }
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
+  toResponse(req, res, siren);
+});
+
+app.post('/hywit/:adv_id/divide', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  adv_state.bridge = !adv_state.bridge;
+  if (adv_state.old_state) {
+    adv_state.old_state.bridge = !adv_state.old_state.bridge;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var self_link = alink('divide');
+  var act = {
+    "name": "pull-lever",
+    "method": "POST",
+    "title": "Pull the lever.",
+    "href": self_link
+  }
+  var siren = {
+    "title": "The Great Divide",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Great Divide", 
+      "description": "You're standing on the edge of a great divide. You can see a rusty lever."
+    },
+    "actions": [ act ],
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "south" ], "title": "Go south to the hill.", "href": alink("hill") }
+    ]
+  };
+
+  if (adv_state.bridge) {
+    siren.properties.description = siren.properties.description + " There is a bridge crossing the divide.";
+    if (adv_state.skeleton) {
+      siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
+    } else {
+      siren.links.push({ "rel": [ "move" ], "title": "Cross the bridge.", "href": alink('bridge') });
+    }
+  }
+  else {
+    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";    
+    if (adv_state.skeleton) {
+      siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
+    } 
+  }
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
+  var fsmImageName = "divide-0-inaccessible";
+  if (adv_state.bridge) {
+    fsmImageName = "divide-1-crossable";
+  }
+
+  setFsmImage('divide', fsmImageName);
+
+  toResponse(req, res, siren);
+});
+
 app.get('/hywit/:adv_id/lake', function(req, res){
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
@@ -439,6 +589,12 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     };
 
     siren.links.push(row);
+
+    setFsmImage('lake', 'lake-1-boat'); 
+  }
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
   }
 
   toResponse(req, res, siren);
@@ -471,20 +627,30 @@ app.get('/hywit/:adv_id/otter', function(req, res){
     return;
   }
 
+  if ('undefined' === typeof adv_state.otter) {
+    res.status(403).send();
+    return;
+  }
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
 
   var current = Date.now() / 1000;
   var elapsed = current - adv_state.otter;
-  var totalTime = 60;
-  var halfTime = 30;
-  var otterReturned = elapsed > 60;
+  var totalTime = 120;
+  var halfTime = 60;
+  var otterReturned = elapsed > totalTime;
   if (otterReturned) {
     adv_state.boat = current;
     res.status(303).location(alink('lake')).send();
+
+    setFsmImage('otter', 'otter-3-back');
+
     return;
   }
+
+  var otterReturning = elapsed > halfTime;
 
   var self_link = alink('otter');
   var siren = {
@@ -501,11 +667,17 @@ app.get('/hywit/:adv_id/otter', function(req, res){
     ]
   };
 
-  if (elapsed > halfTime) {
+  if (otterReturning) {
     siren.properties.description += " Currently, it is on the way back, towing the boat.";
+    setFsmImage('otter', 'otter-2-returning');
   }
   else {
     siren.properties.description += " Currently, it is swimming towards the island.";
+    setFsmImage('otter', 'otter-1-fetching');
+  }
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
   }
 
   toResponse(req, res, siren);
@@ -545,6 +717,10 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     ]
   };
 
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
   toResponse(req, res, siren);
 });
 
@@ -566,7 +742,7 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
     }
     var siren = {
       "title": "A terrifying grue.",
-      "class": [ "location" ],
+      "class": [ "location" ], 
       "properties": {
         "name": "A terrifying grue.",
         "description": "Uh-oh. A terrifying grue has appeared in front of you. This could be fatal, unless you know your HTTP methods."
@@ -576,8 +752,14 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
         { "rel": [ "view" ], "href": imglink("grue.png"), type: "image/png" }
       ]
     };
+
+    if (adv_state.old_state) {
+      siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+    }
+
     toResponse(req, res, siren);
   } else {
+    setFsmImage('grue', 'grue-2-gone');
     res.status(410).send("The grue has vanished permanently.");
   }
 });
@@ -592,16 +774,21 @@ function killGrue(req, res) {
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
+  setFsmImage('grue', 'grue-2-gone');
+
   adv_state.grue = "dead";
   res.status(204).location(alink('brook')).send();
 }
 
 function eatenByGrue(res) {
+  setFsmImage('grue', 'grue-1-deadly');
   res.status(405).send("You've been eaten by a grue.");  
 }
 
 app.post('/hywit/:adv_id/gruesome', function(req, res) {
   var verb = req.body.httpmethod;
+
   if (verb === 'DELETE') {
     killGrue(req, res);
     return;
@@ -667,6 +854,10 @@ app.get('/hywit/:adv_id/study', function(req, res) {
     ]
   };
 
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
   toResponse(req, res, siren);
 });
 
@@ -703,6 +894,12 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
       ]
     };
 
+    if (adv_state.old_state) {
+      siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+    }
+
+    setFsmImage('book', 'book-2-free');
+
     toResponse(req, res, siren);
   }
   else if (book_id === 1 || book_id === 2) {
@@ -710,6 +907,8 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
       "book": book_name(book_id), 
       "text": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
     };
+
+    setFsmImage('book', 'book-1-stuck');
 
     toJsonResponse(req, res, plainJson);
   }
@@ -774,6 +973,10 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
       };
       siren.actions = [ enter_action ];
     }
+  }
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
   }
 
   toResponse(req, res, siren);
@@ -860,6 +1063,10 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     siren.actions = mirror_actions;
   }
 
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
   toResponse(req, res, siren);
 });
 
@@ -893,6 +1100,8 @@ app.post('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
   }
 
   adv_state.room = !adv_state.room;
+
+  setFsmImage('mirror', 'mirror-1-open');
 
   res.status(302).location(alink('mirrors')).send();
 });
@@ -938,6 +1147,11 @@ function breakMirror(req, res) {
   if (index > -1) {
     adv_state.mirrors.splice(index, 1);
   }
+
+  var imagesLeft = adv_state.mirrors.length;
+  var imageNo = 7 - imagesLeft;
+  var imageFileName = 'mirrors-' + imageNo + '-left-' + imagesLeft;
+  setFsmImage('mirrors', imageFileName);
 
   res.status(204).location(alink('mirrors')).send();  
 }
@@ -985,9 +1199,15 @@ app.get('/hywit/:adv_id/room', function(req, res){
     roomImage = { "rel": [ "view" ], "href": imglink('room-floor.png'), "type": "image/png" };
     siren.properties.description = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
     siren.links.push({ "rel": [ "move", "down" ], "href": alink("study"), "title": "Enter the hole in the floor." });
+  
+    setFsmImage('room', 'room-1-floor');
   }
   
   siren.links.push(roomImage);
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
 
   toResponse(req, res, siren);
 });
@@ -1001,6 +1221,7 @@ var signOrientation = rtlOrientation;
 
 app.get('/hywit/:adv_id/sign', function(req, res){
   var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
@@ -1032,14 +1253,26 @@ app.get('/hywit/:adv_id/sign', function(req, res){
     ]
   };
 
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
+
   toResponse(req, res, siren);
 });
 
-app.get('/hywit/:adv_id/entrance', function(req, res){
+app.get('/hywit/:adv_id/entrance', function(req, res) {
   var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
   var self_link = alink('entrance');
   var siren = {
     "title": "The Tower Entrance",
@@ -1050,20 +1283,158 @@ app.get('/hywit/:adv_id/entrance', function(req, res){
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "south" ], "href": alink("hill"), "title": "Go south to the hill." },
+      { "rel": [ "move", "south" ], "href": alink("divide"), "title": "Go south to the divide." },
       { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." },
       { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" }
+    ]
+  };
+
+  if (adv_state.bridge) {
+    adv_state.skeleton = true;
+    siren = {
+      "title": "The Tower Entrance",
+      "class": [ "location" ],
+      "properties": { 
+        "name": "The Tower Entrance", 
+        "description": "As you reach the end of the bridge, you hear a great rattling of bones. A skeleton has risen in the middle of the bridge and is coming toward you. You better think quickly what to do."
+      },
+      "links": [
+        { "rel": [ "self" ], "href": self_link },
+        { "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('snacks') },
+        { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" }
+      ]
+    };
+  }
+  else {
+    siren.properties.description = siren.properties.description + " The skeleton is pacing back and forth, trapped on the floating bridge.";
+    if (adv_state.old_state) {
+      siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+    }
+
+    setFsmImage('entrance', 'entrance-1-safe');
+  }
+
+  toResponse(req, res, siren);
+});
+
+app.get('/hywit/:adv_id/snacks', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+  var self_link = alink('snacks');
+  var siren = {
+    "title": "A bag of popcorn?",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "A bag of popcorn?", 
+      "description": "Incredibly, it seems someone has left a bag of popcorn here. The bag says 'Dr Hofstadter's snacks'.",
+    },
+    "actions": [
+      {
+        "name": "eat-snacks",
+        "title": "Eat some of Dr Hofstadter's popcorn.",
+        "method": "POST",
+        "href": self_link
+      }
+    ],
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "previous"], "href": alink("entrance") }
     ]
   };
 
   toResponse(req, res, siren);
 });
 
-app.get('/hywit/:adv_id/tower', function(req, res){
+app.post('/hywit/:adv_id/snacks', function(req, res) {
+  var siren = {
+    "title": "Pushcorn",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "Pushcorn", 
+      "description": "Popcorn and pushcorn are incredibly hard to tell apart. You have a strange sensation as you seem to fall through into a new world, except it's remarkably like the old world. Somewhere, a turtle is laughing."
+    }
+  };
+
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  adv_state.location = alink('entrance'); 
+
+  startGame(req, res, adv_state, siren);
+});
+
+app.get('/hywit/:adv_id/skcans', function(req, res) {
   var adv_id = req.params.adv_id;
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+  var self_link = alink('skcans');
+  var siren = {
+    "title": "A bag of popcorn?",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "A bag of popcorn?", 
+      "description": "You still have the bag of 'Dr Hofstadter's snacks'."
+    },
+    "actions": [
+      {
+        "name": "eat-snacks",
+        "title": "Eat some of Dr Hofstadter's popcorn.",
+        "method": "POST",
+        "href": self_link
+      }
+    ],
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "previous"], "href": alink("entrance") }
+    ]
+  };
+
+  toResponse(req, res, siren);
+});
+
+app.post('/hywit/:adv_id/skcans', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  var loc = adv_state.old_state.location;
+
+  var siren = {
+    "title": "Popcorn",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "Popcorn", 
+      "description": "Popcorn and pushcorn are incredibly hard to tell apart. You have a strange sensation as you seem to fall out from the new world and back to the old one. Somewhere, a laugh is turtleing."
+    }
+  };
+
+  setFsmImage('pcorn', 'pcorn-0');
+
+  res.status(302).location(adv_state.old_state.location).contentType('application/vnd.siren+json').send(siren);
+});
+
+app.get('/hywit/:adv_id/tower', function(req, res){
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+//  if (req.headers.authorization) {
+//    var decodedAuthString = new Buffer(req.headers.authorization, 'base64').toString('ascii');
+//    console.log(decodedAuthString);
+//  }
 
   var self_link = alink('tower');
   var siren = {
@@ -1090,6 +1461,10 @@ app.get('/hywit/:adv_id/tower', function(req, res){
       { "rel": [ "view" ], "href": imglink("guardian-skull.png"), type: "image/png" }
     ]
   };
+
+  if (adv_state.old_state) {
+    siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+  }
 
   toResponse(req, res, siren, 401);
 });
@@ -1190,11 +1565,22 @@ function turnSign(req, res) {
       ]
     };
 
+    if (adv_state.old_state) {
+      siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+    }
+
     toResponse(req, res, siren);
   }
   else {
     res.status(400).send("Illegal value for 'orientation'." + orientation);
   }    
+
+  var fsmImage = 'sign-0-gibberish';
+  if (orientation === ltrOrientation) {
+    fsmImage = 'sign-1-readable';
+  }
+
+  setFsmImage('sign', fsmImage);
 }
 
 app.put('/hywit/:adv_id/sign', function(req, res) {
@@ -1205,7 +1591,8 @@ app.post('/hywit/:adv_id/sign', function(req, res) {
   turnSign(req, res);
 });
 
-app.post('/hywit/void', function(req, res) {
+function startGame(req, res, old_state, siren) {
+
   var adv_id = s4();
   var ts = new Date().getTime();
   var one_hour_in_millis = 60*60*1000;
@@ -1228,9 +1615,19 @@ app.post('/hywit/void', function(req, res) {
     return; 
   }
 
-  adventures[adv_id] = init_state(adv_id);
+  adventures[adv_id] = init_state(adv_id, old_state);
   var url = hylink(adv_id + '/hill');
-  res.status(201).location(url).send();
+  if (siren) {
+    setFsmImage('pcorn', 'pcorn-1');
+    res.status(201).location(url).contentType('application/vnd.siren+json').send(siren);
+  } 
+  else {
+    res.status(201).location(url).send();
+  }
+}
+
+app.post('/hywit/void', function(req, res) {
+  startGame(req, res);
 });
 
 app.get('/hywit/:adv_id/:resource', function(req, res) {
@@ -1307,12 +1704,22 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
           }
         }
       }  
+
+      if (adv_state.old_state) {
+        siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
+      }
     }
 
     if (resource === 'hill') {
       if (adv_state.wizardname !== undefined) {
-        console.log("replace!");
+        // console.log("replace!");
         siren.properties.description = siren.properties.description.replace("Unnamed Wizard", "Wizard " + masterWizardName);
+      }
+      else if (adv_state.old_state !== undefined) {
+        if (adv_state.old_state.wizardname !== undefined) {
+          // console.log("replace!");
+          siren.properties.description = siren.properties.description.replace("Unnamed Wizard", "Wizard " + masterWizardName);
+        }
       }
     }
 

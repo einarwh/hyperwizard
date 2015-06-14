@@ -5,8 +5,14 @@ var fs = require('fs');
 
 var mem = { history: [] };
 
-var sendRequest = function(self, opt, requestMethod) {
+if (typeof String.prototype.startsWith !== 'function') {
+  String.prototype.startsWith = function (str) {
+    return this.lastIndexOf(str, 0) === 0
+  };
+}
 
+var sendRequest = function(self, opt, requestMethod) {
+  
   request(opt, function(error, response, body) {
     var resInfo = {};
 
@@ -24,6 +30,18 @@ var sendRequest = function(self, opt, requestMethod) {
       neat({ response: resInfo});
       return;
     }
+
+//    if (response.statusCode === 401) {
+//      mem.challenged = true;
+//      mem.auth = undefined;
+//    }
+//    else {
+//      mem.challenged = false;
+//    }
+
+//    if (response.statusCode === 403) {
+//      mem.auth = undefined;
+//    }
 
     if (typeof opt === 'string') {
       self.request = { uri: opt };
@@ -80,7 +98,12 @@ var sendRequest = function(self, opt, requestMethod) {
       resInfo["content-type"] = self.headers["content-type"];
     }
 
-    if (self.body.length > 0 && "application/vnd.siren+json" === self.headers["content-type"]) {
+//    if (self.headers["www-authenticate"]) {
+//      resInfo["www-authenticate"] = self.headers["www-authenticate"];
+//    }
+
+    var contentType = self.headers["content-type"];
+    if (self.body.length > 0 && contentType.startsWith("application/vnd.siren+json")) {
       self.siren = JSON.parse(self.body);
     }
     else {
@@ -89,7 +112,7 @@ var sendRequest = function(self, opt, requestMethod) {
 
     self.json = self.siren;
 
-    if (self.body.length > 0 && "application/json" === self.headers["content-type"]) {
+    if (self.body.length > 0 && contentType.startsWith("application/json")) {
       self.json = JSON.parse(self.body);
       self.siren = "";
     }
@@ -121,6 +144,12 @@ var visit = function(self, url, accepts) {
     "Referer": self.at,
     "X-Alt-Referer": self.at
   };
+
+//  if (opt.auth !== undefined) {
+//    opt.headers["Authorization"] = "Basic " + opt.auth;
+//    opt.auth = undefined;
+//    reqInfo.authorization = opt.headers.Authorization;
+//  }
 
   reqInfo.accept = opt.headers.Accept;
 
@@ -247,6 +276,16 @@ exports.do = function(actionName, formData) {
           defaultMethod = formData;
         }
         else {
+//          if (mem.challenged === true) {
+//            var formDataKeys = Object.keys(formData);
+//            if (formDataKeys.length > 0) {
+//              var authDataKey = formDataKeys[0];
+//              var authDataVal = formData[authDataKey];
+//              var authString = authDataKey + ":" + authDataVal;
+//              var encodedAuthString = new Buffer(authString).toString('base64')
+//              requestData.auth = encodedAuthString;
+//            }
+//          }
           requestData.form = formData;
         }
       }

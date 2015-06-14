@@ -8,7 +8,7 @@
     "links": [
       { "rel": [ "self" ], "href": "self" },
       { "rel": [ "move", "east" ], "title": "Go east to the brook.", "href": "brook" },
-      { "rel": [ "move", "north" ], "title": "Go north to the entrance.", "href": "entrance" },
+      { "rel": [ "move", "north" ], "title": "Go north towards the tower.", "href": "divide" },
       { "rel": [ "view" ], "href": "hill.png", "type": "image/png" }
     ]
 }
