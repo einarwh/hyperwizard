@@ -448,6 +448,8 @@ app.get('/hywit/:adv_id/divide', function(req, res) {
     } else {
       siren.links.push({ "rel": [ "move" ], "title": "Cross the bridge.", "href": alink('bridge') });
     }
+
+    setFsmImage('divide', 'divide-1-crossable');
   }
   else {
     siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";    

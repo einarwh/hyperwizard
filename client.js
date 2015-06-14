@@ -22,12 +22,20 @@ var sendRequest = function(self, opt, requestMethod) {
       return;
     }
 
-    if (response.statusCode === 400 || response.statusCode === 404 || response.statusCode === 410) {
+    if (response.statusCode === 400 || 
+      response.statusCode === 404 || 
+      response.statusCode === 410 || 
+      response.statusCode === 405) {
       var statusName = http.STATUS_CODES[response.statusCode];
       var statusSummary = response.statusCode + " " + statusName;
       resInfo.status = statusSummary;
       // resInfo.etag = response.headers.etag;
       neat({ response: resInfo});
+
+      if (response.statusCode === 405) {
+        self.body = body;
+      }
+
       return;
     }
 
