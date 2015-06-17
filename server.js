@@ -579,6 +579,8 @@ app.get('/hywit/:adv_id/lake', function(req, res){
         "title": "Look at the otter.", 
         "href": alink('otter')
       });
+
+      setFsmImage('lake', 'lake-1-waiting');
     }
   }
   else {
@@ -592,7 +594,7 @@ app.get('/hywit/:adv_id/lake', function(req, res){
 
     siren.links.push(row);
 
-    setFsmImage('lake', 'lake-1-boat'); 
+    setFsmImage('lake', 'lake-2-boat'); 
   }
 
   if (adv_state.old_state) {
@@ -860,6 +862,10 @@ app.get('/hywit/:adv_id/study', function(req, res) {
     siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
   }
 
+  if (adv_state.book_id !== undefined) {
+    setFsmImage('book', 'book-0-choice');
+  }
+
   toResponse(req, res, siren);
 });
 
@@ -882,6 +888,8 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
   }
 
   var book_id = parseInt(req.params.book_id, 10);
+  adv_state.book_id = book_id;
+
   var siren;
   if (book_id === 3) {
     siren = { 
@@ -1641,6 +1649,7 @@ function startGame(req, res, old_state, siren) {
     res.status(201).location(url).contentType('application/vnd.siren+json').send(siren);
   } 
   else {
+    setFsmImage('game', 'game-1');
     res.status(201).location(url).send();
   }
 }
@@ -1733,6 +1742,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
       if (adv_state.wizardname !== undefined) {
         // console.log("replace!");
         siren.properties.description = siren.properties.description.replace("Unnamed Wizard", "Wizard " + masterWizardName);
+        setFsmImage('hill', 'hill-1-known');
       }
       else if (adv_state.old_state !== undefined) {
         if (adv_state.old_state.wizardname !== undefined) {
@@ -1744,6 +1754,137 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
 
     toResponse(req, res, siren);
   });
+});
+
+var integerstr = "";
+var fractionstr = "";
+var dotSymbol = ".";
+var stateEmptyNumber = { name: "empty-number", legal: false };
+var stateBuildingInteger = { name: "building-integer", legal: true };
+var stateDot = { name: "dot", legal: false };
+var stateBuildingFraction = { name: "building-fraction", legal: true };
+var state = stateEmptyNumber;
+
+function getNonZeroDigit(s) {
+  var d = getDigit(s);
+  if (d === 0) {
+    return undefined;
+  }
+
+  return d;
+}
+
+function getDigit(s) {
+  var num = parseInt(s, 10);
+  if (isNaN(num)) {
+    return undefined;
+  }
+
+  if (num >= 0 && num < 10) {
+    return num;
+  }
+
+  return undefined;
+}
+
+function handleStateEmptyNumber(symbol, res) {
+  var d = getNonZeroDigit(symbol);
+  if (d === undefined) {
+    res.status(400).send();
+    return;
+  }
+
+  state = stateBuildingInteger;
+  setFsmImage('number', 'number-1-integer');
+  integerstr = integerstr + symbol;
+
+  res.status(200).send();
+}
+
+function handleStateBuildingInteger(symbol, res) {
+  if (symbol === dotSymbol) {
+    state = stateDot;
+    setFsmImage('number', 'number-2-dot');
+    res.status(200).send();
+    return;
+  }
+  else {
+    var d = getDigit(symbol);
+    if (d === undefined) {
+      res.status(400).send();
+      return;
+    }
+
+    integerstr = integerstr + symbol;
+    res.status(200).send();
+  }
+}
+
+function handleStateDot(symbol, res) {
+  var d = getDigit(symbol);
+  if (d === undefined) {
+    res.status(400).send();
+    return;
+  }
+  
+  state = stateBuildingFraction;
+  setFsmImage('number', 'number-3-fraction');
+  fractionstr = fractionstr + symbol;
+  res.status(200).send();
+}
+
+function handleStateBuildingFraction(symbol, res) {
+  var d = getDigit(symbol);
+  if (d === undefined) {
+    res.status(400).send();
+    return;
+  }
+
+  fractionstr = fractionstr + symbol;
+  res.status(200).send();
+}
+
+app.get('/number', function(req, res) {
+  if (state.legal) {
+    var num = integerstr;
+    if (state === stateBuildingFraction) {
+      num = integerstr + dotSymbol + fractionstr;
+    }
+
+    res.status(200).send(num);
+    return;
+  }
+
+  if (state === stateEmptyNumber) {
+    setFsmImage('number', 'number-0-empty');
+  }
+  res.status(404).send();
+});
+
+app.post('/number', function(req, res) {
+  var symbol = req.body.symbol;
+
+  if (state === stateEmptyNumber) {
+    handleStateEmptyNumber(symbol, res);
+    return;
+  }
+
+  if (state === stateBuildingInteger) {
+    handleStateBuildingInteger(symbol, res);
+    return;
+  }
+
+  if (state === stateDot) {
+    handleStateDot(symbol, res);
+    return;
+  }
+
+  if (state === stateBuildingFraction) {
+    handleStateBuildingFraction(symbol, res);
+    return;
+  }
+
+  res.status(500).send();
 });
 
 app.listen(port);

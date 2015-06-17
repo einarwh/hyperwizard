@@ -24,17 +24,12 @@ var sendRequest = function(self, opt, requestMethod) {
 
     if (response.statusCode === 400 || 
       response.statusCode === 404 || 
-      response.statusCode === 410 || 
-      response.statusCode === 405) {
+      response.statusCode === 410) {
       var statusName = http.STATUS_CODES[response.statusCode];
       var statusSummary = response.statusCode + " " + statusName;
       resInfo.status = statusSummary;
       // resInfo.etag = response.headers.etag;
       neat({ response: resInfo});
-
-      if (response.statusCode === 405) {
-        self.body = body;
-      }
 
       return;
     }
@@ -336,6 +331,20 @@ exports.void = function(accepts) {
 
 exports.study = function() {
     visit(this, 'http://localhost:1337/hywit/1337/study');
+};
+
+exports.digit = function(symbol) {
+  var requestData = {
+    uri: 'http://localhost:1337/number',
+    method: "POST",
+    form: { "symbol": symbol }
+  };
+
+  visit(this, requestData);
+};
+
+exports.number = function(symbol) {
+  visit(this, 'http://localhost:1337/number');
 };
 
 function outOfBounds(links, linkIndex) {
