@@ -1293,8 +1293,8 @@ app.get('/hywit/:adv_id/entrance', function(req, res) {
     },
     "links": [
       { "rel": [ "self" ], "href": self_link },
-      { "rel": [ "move", "south" ], "href": alink("divide"), "title": "Go south to the divide." },
       { "rel": [ "move", "enter" ], "href": alink("tower"), "title": "Enter the tower." },
+      { "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('snacks') },
       { "rel": [ "view" ], "href": imglink('entrance.png'), "type": "image/png" }
     ]
   };

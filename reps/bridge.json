@@ -1,0 +1,12 @@
+{
+    "title": "The Bridge",
+    "class": [ "location" ],
+    "properties": { 
+      "name": "The Bridge", 
+      "description": "You're standing on the bridge. There is a heap of bones here that makes you uneasy. Better move on."
+   },
+    "links": [
+      { "rel": [ "self" ], "href": "self" },
+      { "rel": [ "move" ], "title": "Cross the bridge quickly to reach the entrance.", "href": "entrance" }
+    ]
+}

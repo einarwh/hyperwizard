@@ -340,11 +340,11 @@ exports.digit = function(symbol) {
     form: { "symbol": symbol }
   };
 
-  visit(this, requestData);
+  visit(this, requestData, 'text/plain');
 };
 
 exports.number = function(symbol) {
-  visit(this, 'http://localhost:1337/number');
+  visit(this, 'http://localhost:1337/number', 'text/plain');
 };
 
 function outOfBounds(links, linkIndex) {
