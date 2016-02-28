@@ -809,6 +809,10 @@ app.patch('/hywit/:adv_id/gruesome', function(req, res) {
   eatenByGrue(res);
 });
 
+app.put('/hywit/:adv_id/gruesome', function(req, res) { 
+  eatenByGrue(res);
+});
+
 app.delete('/hywit/:adv_id/gruesome', function(req, res) {
   killGrue(req, res);
 });
