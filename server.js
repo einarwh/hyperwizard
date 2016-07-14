@@ -135,7 +135,7 @@ function s4() {
 function setFsmImage(dir, imageName) {
   //console.log('SET FSM IMAGE ' + imageName);
   var pngFile = imageName + ".png";
-  var basePath = lepath.join(__dirname, '../hub/fsmwatcher');
+  var basePath = lepath.join(__dirname, '../fsmwatcher');
   var srcPath = lepath.join(basePath, 'graphs', dir, pngFile);
   var dstPath = lepath.join(basePath, 'fsmimages', pngFile);
   fs.copySync(srcPath, dstPath);
