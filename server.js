@@ -66,7 +66,7 @@ function has_rep(rep) {
   for (var i = 0; i < reps.length; i++) {
     if (reps[i] === rep) {
       return true;
-    }  
+    }
   }
   return false;
 }
@@ -81,7 +81,7 @@ function init_state(adv_id, old_state) {
   }
 
   var mirrors = [1, 2, 3, 4, 5, 6, 7];
-  var unbreakable = Math.floor((Math.random()*mirrors.length)+1); 
+  var unbreakable = Math.floor((Math.random()*mirrors.length)+1);
   var state = {
     "id": adv_id,
     "timestamp": new Date().getTime(),
@@ -133,12 +133,20 @@ function s4() {
 }
 
 function setFsmImage(dir, imageName) {
-  //console.log('SET FSM IMAGE ' + imageName);
+  //console.log('Set FSM image ' + imageName);
   var pngFile = imageName + ".png";
   var basePath = lepath.join(__dirname, '../fsmwatcher');
   var srcPath = lepath.join(basePath, 'graphs', dir, pngFile);
   var dstPath = lepath.join(basePath, 'fsmimages', pngFile);
-  fs.copySync(srcPath, dstPath);
+  fs.stat(srcPath, function (err, stat) {
+    if (err == null) {
+      fs.copySync(srcPath, dstPath);
+    } else if(err.code == 'ENOENT') {
+      console.log("FSM image doesn't exist. " + srcPath);
+    } else {
+      console.log('Some other error: ', err.code);
+    }
+  });
 }
 
 function acceptsHtml(req) {
@@ -160,10 +168,10 @@ function toActionForm(act) {
   if (act.method === "GET") {
     httpMethod = "GET";
   }
-  
+
   s += "<p>" + act.title + '</p>';
   s += '<form action="' + act.href + '" method="' + httpMethod + '">';
-  
+
   if ('undefined' === typeof act.method) {
     s += '<select name="httpmethod">';
     s += '<option value="GET">GET</option>';
@@ -176,7 +184,7 @@ function toActionForm(act) {
 
   if ('undefined' !== typeof act.fields) {
     for (var i = 0, len = act.fields.length; i < len; i++) {
-      field = act.fields[i]; 
+      field = act.fields[i];
       s += field.name + '<br />';
       s += '<input type="' + field.type + '" name="' + field.name + '" />';
       s += '<br />';
@@ -214,7 +222,7 @@ function toHtml(srn) {
   var imageLinks = [];
   if ('undefined' !== typeof links) {
     for (var i = 0, len = links.length; i < len; i++) {
-      alink = links[i]; 
+      alink = links[i];
       if ('undefined' !== typeof alink.type) {
         if (alink.rel.indexOf("view") >= 0) {
           imageLinks.push(alink);
@@ -230,10 +238,10 @@ function toHtml(srn) {
       var animage = imageLinks[imgIndex];
       s += '<img src="' + animage.href + '" />';
     }
-    s += '</div>'; 
+    s += '</div>';
   }
 
-  
+
   if ('undefined' !== typeof props) {
     s += "<div>";
     s += '<p class="name">' + props.name + '</p>';
@@ -263,7 +271,7 @@ function toHtml(srn) {
     s += '<ul>';
 
     for (var i = 0, len = links.length; i < len; i++) {
-      alink = links[i]; 
+      alink = links[i];
       var linkText = alink.title || alink.rel;
       s += '<li>' + '<a href="' + alink.href + '">' + linkText + '</a>' + '</li>';
     }
@@ -278,7 +286,7 @@ function toHtml(srn) {
     s += '<ul>';
 
     for (var i = 0, len = actions.length; i < len; i++) {
-      act = actions[i]; 
+      act = actions[i];
       s += '<li>' + toActionForm(act) + '</li>';
     }
 
@@ -347,7 +355,7 @@ app.get('/hywit/void', function(req, res) {
     var plainJson = {
       "title": "The Magical Void",
       "description": "You're in The Magical Void, a place beyond space and time. This is where adventures begin.",
-      "link": 
+      "link":
       {
         "title": "Start a new adventure",
         "url": voidUrl
@@ -357,16 +365,16 @@ app.get('/hywit/void', function(req, res) {
     res.send(JSON.stringify(plainJson));
     return;
   }
-  var siren = { 
+  var siren = {
     "title": "The Magical Void",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Magical Void", 
+    "properties": {
+      "name": "The Magical Void",
       "description": "You\'re in The Magical Void, a place beyond space and time. This is where adventures begin.",
     },
     "actions": [
-      {   
-        "name": "start-adventure", 
+      {
+        "name": "start-adventure",
         "method": "POST",
         "title": "Start adventure",
         "href": hylink('void'),
@@ -374,7 +382,7 @@ app.get('/hywit/void', function(req, res) {
           { "name": "name", "type": "text" },
           { "name": "class", "type": "text" },
           { "name": "race", "type": "text" }
-        ] 
+        ]
       }
     ],
     "links": [
@@ -430,8 +438,8 @@ app.get('/hywit/:adv_id/divide', function(req, res) {
   var siren = {
     "title": "The Great Divide",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Great Divide", 
+    "properties": {
+      "name": "The Great Divide",
       "description": "You're standing on the edge of a great divide. You can see a rusty lever."
     },
     "actions": [ act ],
@@ -452,10 +460,10 @@ app.get('/hywit/:adv_id/divide', function(req, res) {
     setFsmImage('divide', 'divide-1-crossable');
   }
   else {
-    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";    
+    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";
     if (adv_state.skeleton) {
       siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
-    } 
+    }
   }
 
   if (adv_state.old_state) {
@@ -493,8 +501,8 @@ app.post('/hywit/:adv_id/divide', function(req, res) {
   var siren = {
     "title": "The Great Divide",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Great Divide", 
+    "properties": {
+      "name": "The Great Divide",
       "description": "You're standing on the edge of a great divide. You can see a rusty lever."
     },
     "actions": [ act ],
@@ -513,10 +521,10 @@ app.post('/hywit/:adv_id/divide', function(req, res) {
     }
   }
   else {
-    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";    
+    siren.properties.description = siren.properties.description + " There seems to be a strange bridge hovering in the air, parallel to the divide.";
     if (adv_state.skeleton) {
       siren.properties.description = siren.properties.description + " You see a skeleton on the bridge.";
-    } 
+    }
   }
 
   if (adv_state.old_state) {
@@ -550,8 +558,8 @@ app.get('/hywit/:adv_id/lake', function(req, res){
   var siren = {
     "title": "The Lake",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Lake", 
+    "properties": {
+      "name": "The Lake",
       "description": ""
     },
     "links": [
@@ -564,9 +572,9 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     siren.properties.description = "You're standing on the shore of a lake. There's small island in the middle, where you can see a rowing boat tied to a pole. Unfortunately, the current is too strong for you to venture swimming over. Every now and then, the head of an otter emerges from the water.";
 
     if (undefined === adv_state.otter) {
-      var otter = { 
-        name: "send-otter", 
-        title: "Send the otter to fetch the boat.", 
+      var otter = {
+        name: "send-otter",
+        title: "Send the otter to fetch the boat.",
         method: "POST",
         href: self_link
       }
@@ -575,8 +583,8 @@ app.get('/hywit/:adv_id/lake', function(req, res){
     }
     else {
       siren.links.push({
-        "rel": [ "look" ], 
-        "title": "Look at the otter.", 
+        "rel": [ "look" ],
+        "title": "Look at the otter.",
         "href": alink('otter')
       });
 
@@ -586,15 +594,15 @@ app.get('/hywit/:adv_id/lake', function(req, res){
   else {
     siren.properties.description = "You're standing on the shore of a lake. There's small island in the middle. There is a boat here. Every now and then, the head of an otter emerges from the water.";
 
-    var row = { 
-      "rel": [ "move" ], 
-      "title": "Row to the island.", 
-      "href": alink('island') 
+    var row = {
+      "rel": [ "move" ],
+      "title": "Row to the island.",
+      "href": alink('island')
     };
 
     siren.links.push(row);
 
-    setFsmImage('lake', 'lake-2-boat'); 
+    setFsmImage('lake', 'lake-2-boat');
   }
 
   if (adv_state.old_state) {
@@ -660,8 +668,8 @@ app.get('/hywit/:adv_id/otter', function(req, res){
   var siren = {
     "title": "The Swimming Otter",
     "class": [ "entity" ],
-    "properties": { 
-      "name": "The Swimming Otter", 
+    "properties": {
+      "name": "The Swimming Otter",
       "description": "The otter is on its way to fetch the rowing boat. It has spent " + Math.floor(elapsed) + " seconds so far."
     },
     "links": [
@@ -704,13 +712,13 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     res.status(302).location(alink('hill')).send();
     return;
   }
-  
+
   var self_link = alink('hall');
   var siren = {
     "title": "The Great Hall",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Great Hall", 
+    "properties": {
+      "name": "The Great Hall",
       "description": "You find yourself in a great hall. There's a table here. You see some cutlery of no interest to you, as well as a beautiful silver tea pot. Could it be magical? A door leads to the east from here."
     },
     "links": [
@@ -746,13 +754,13 @@ app.get('/hywit/:adv_id/grue', function(req, res) {
     }
     var siren = {
       "title": "A terrifying grue.",
-      "class": [ "location" ], 
+      "class": [ "location" ],
       "properties": {
         "name": "A terrifying grue.",
         "description": "Uh-oh. A terrifying grue has appeared in front of you. This could be fatal, unless you know your HTTP methods."
       },
       "actions": [ act ],
-      "links": [       
+      "links": [
         { "rel": [ "view" ], "href": imglink("grue.png"), type: "image/png" }
       ]
     };
@@ -787,7 +795,7 @@ function killGrue(req, res) {
 
 function eatenByGrue(res) {
   setFsmImage('grue', 'grue-1-deadly');
-  res.status(405).send("You've been eaten by a grue.");  
+  res.status(405).send("You've been eaten by a grue.");
 }
 
 app.post('/hywit/:adv_id/gruesome', function(req, res) {
@@ -797,19 +805,19 @@ app.post('/hywit/:adv_id/gruesome', function(req, res) {
     killGrue(req, res);
     return;
   }
- 
+
   eatenByGrue(res);
 });
 
-app.get('/hywit/:adv_id/gruesome', function(req, res) { 
+app.get('/hywit/:adv_id/gruesome', function(req, res) {
   eatenByGrue(res);
 });
 
-app.patch('/hywit/:adv_id/gruesome', function(req, res) { 
+app.patch('/hywit/:adv_id/gruesome', function(req, res) {
   eatenByGrue(res);
 });
 
-app.put('/hywit/:adv_id/gruesome', function(req, res) { 
+app.put('/hywit/:adv_id/gruesome', function(req, res) {
   eatenByGrue(res);
 });
 
@@ -834,31 +842,31 @@ app.get('/hywit/:adv_id/study', function(req, res) {
     res.status(302).location(alink('hill')).send();
     return;
   }
-  
+
   var self_link = alink('study');
 
   var book_action = function(book_number) {
-    return { 
-      "name": "take-book-" + book_number, 
-      "title": "Take '" + book_name(book_number) + "'", 
+    return {
+      "name": "take-book-" + book_number,
+      "title": "Take '" + book_name(book_number) + "'",
       "method": "POST",
-      "href": alink("study/books/" + book_number) 
+      "href": alink("study/books/" + book_number)
     };
   };
 
   var siren = { "class": [ "location" ],
     "title": "The Wizard's Study",
-    "properties": { 
-      "name": "The Wizard's Study", 
+    "properties": {
+      "name": "The Wizard's Study",
       "description": "You have entered the Wizard's Study. Luckily, the Wizard is not in, or he would surely have deleted you. This means that you have conquered the Wizard's Tower. Congratulations! You may pick a prize, by choosing a book from the Wizard's shelf. Choose wisely."
     },
-    "actions": [ 
+    "actions": [
       book_action(1),
       book_action(2),
       book_action(3)
     ],
     "links": [
-      { "rel": [ "self" ], "href": self_link } 
+      { "rel": [ "self" ], "href": self_link }
     ]
   };
 
@@ -896,15 +904,15 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
 
   var siren;
   if (book_id === 3) {
-    siren = { 
+    siren = {
       "class": [ "location" ],
       "title": book_name(book_id),
-      "properties": { 
-        "name": book_name(book_id), 
+      "properties": {
+        "name": book_name(book_id),
         "description": "Well done. You may return to The Magical Void with your prize."
       },
       "links": [
-        { "rel": [ "return" ], "href": hylink('void'), "title": "Return to the void." } 
+        { "rel": [ "return" ], "href": hylink('void'), "title": "Return to the void." }
       ]
     };
 
@@ -917,8 +925,8 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
     toResponse(req, res, siren);
   }
   else if (book_id === 1 || book_id === 2) {
-    var plainJson = { 
-      "book": book_name(book_id), 
+    var plainJson = {
+      "book": book_name(book_id),
       "text": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
     };
 
@@ -940,7 +948,7 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
   if ('undefined' === typeof adv_state) {
     res.status(404).send();
     return;
-  } 
+  }
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
@@ -959,14 +967,14 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
       res.status(410).send();
     }
     return;
-  } 
+  }
 
   var self_link = alink('mirrors/' + mirror);
 
   var siren = { "class": [ "location" ],
     "title": "Mirror #" + mirror,
-    "properties": { 
-      "name": "Mirror #" + mirror, 
+    "properties": {
+      "name": "Mirror #" + mirror,
       "description": "You see a reflection of yourself."
     },
     "links": [
@@ -979,11 +987,11 @@ app.get('/hywit/:adv_id/mirrors/:mirror', function(req, res){
   if (mirror === adv_state.unbreakable) {
     siren.properties.description = "You see a reflection of yourself, upside-down.";
     if (adv_state.mirrors.length === 1) {
-      var enter_action = { 
+      var enter_action = {
         "name": "enter-mirror",
         "title": "Enter the mirror!",
         "method": "POST",
-        "href": alink("mirrors/" + adv_state.unbreakable) 
+        "href": alink("mirrors/" + adv_state.unbreakable)
       };
       siren.actions = [ enter_action ];
     }
@@ -1013,23 +1021,23 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
     res.status(302).location(alink('hill')).send();
     return;
   }
-  
+
   var self_link = alink('mirrors');
-  
+
   var smash_mirror = function (mirr) {
-    return { 
+    return {
       "name": "smash-mirror-" + mirr,
       "title": "Smash the mirror!",
       "method": "DELETE",
-      "href": alink("mirrors/" + mirr) 
+      "href": alink("mirrors/" + mirr)
     };
   };
 
   var look_mirror = function (mirr) {
-    return { 
+    return {
       "rel": [ "look" ],
       "title": "Look into the mirror.",
-      "href": alink("mirrors/" + mirr) 
+      "href": alink("mirrors/" + mirr)
     };
   };
 
@@ -1048,14 +1056,14 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
   var desc = "You're in a room of mirrors. You see infinite variations of yourself disappearing into nowhere. Somewhere in the distance you even see your own image upside-down. It is rather confusing. There are doors to the north and to the west.";
   if (mirror_actions.length === 0) {
     desc = "You're in a room with a single mirror. There are doors to the north and to the west.";
-    //var enter_action = { 
+    //var enter_action = {
     //  "name": "enter-mirror-" + adv_state.unbreakable,
     //  "title": "Enter the mirror!",
     //  "method": "POST",
-    //  "href": alink("mirrors/" + adv_state.unbreakable) 
+    //  "href": alink("mirrors/" + adv_state.unbreakable)
     //};
     //mirror_actions.push(enter_action);
-  } 
+  }
 
   links.unshift(
     { "rel": [ "self" ], "href": self_link },
@@ -1066,8 +1074,8 @@ app.get('/hywit/:adv_id/mirrors', function(req, res){
 
   var siren = { "class": [ "location" ],
     "title": "The Mirror Room",
-    "properties": { 
-      "name": "The Mirror Room", 
+    "properties": {
+      "name": "The Mirror Room",
       "description": desc
     },
     "links": links
@@ -1129,7 +1137,7 @@ function breakMirror(req, res) {
   if ('undefined' === typeof adv_state) {
     res.status(404).send();
     return;
-  } 
+  }
 
   var alink = function (relative) {
     return advlink(adv_id, relative);
@@ -1148,7 +1156,7 @@ function breakMirror(req, res) {
       res.status(410).send();
     }
     return;
-  } 
+  }
 
   if (mirror === adv_state.unbreakable) {
     res.status(405).send();
@@ -1167,12 +1175,12 @@ function breakMirror(req, res) {
   var imageFileName = 'mirrors-' + imageNo + '-left-' + imagesLeft;
   setFsmImage('mirrors', imageFileName);
 
-  res.status(204).location(alink('mirrors')).send();  
+  res.status(204).location(alink('mirrors')).send();
 }
 
 app.delete('/hywit/:adv_id/mirrors/:mirror', function(req, res) {
   breakMirror(req, res);
-}); 
+});
 
 app.get('/hywit/:adv_id/room', function(req, res){
   var adv_id = req.params.adv_id;
@@ -1197,13 +1205,13 @@ app.get('/hywit/:adv_id/room', function(req, res){
   var siren = {
     "title": "The Unassuming Room",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Unassuming Room", 
+    "properties": {
+      "name": "The Unassuming Room",
       "description": "You're in a plain room. It's not particularly interesting, but the HTTP acolyte in you senses something eerie. There's a door to the south. You also notice that there is a square hole in the ceiling."
     },
-    "links": [ 
-      { "rel": [ "self" ], "href": self_link }, 
-      { "rel": [ "move", "south" ], "href": alink('mirrors'), "title": "Go back to the room of mirrors." } 
+    "links": [
+      { "rel": [ "self" ], "href": self_link },
+      { "rel": [ "move", "south" ], "href": alink('mirrors'), "title": "Go back to the room of mirrors." }
     ]
   };
 
@@ -1213,10 +1221,10 @@ app.get('/hywit/:adv_id/room', function(req, res){
     roomImage = { "rel": [ "view" ], "href": imglink('room-floor.png'), "type": "image/png" };
     siren.properties.description = "You're in a plain room. There's a door to the south. More interestingly, there is also a square hole in the floor.";
     siren.links.push({ "rel": [ "move", "down" ], "href": alink("study"), "title": "Enter the hole in the floor." });
-  
+
     setFsmImage('room', 'room-1-floor');
   }
-  
+
   siren.links.push(roomImage);
 
   if (adv_state.old_state) {
@@ -1244,14 +1252,14 @@ app.get('/hywit/:adv_id/sign', function(req, res){
   var siren = {
     "title": "The Mysterious Sign",
     "class": [ "entity" ],
-    "properties": { 
-      "name": "The Mysterious Sign", 
+    "properties": {
+      "name": "The Mysterious Sign",
       "description": signDesc,
-      "orientation": signOrientation 
+      "orientation": signOrientation
     },
-    "actions": [ 
-      { 
-        "name": "turn-sign", 
+    "actions": [
+      {
+        "name": "turn-sign",
         "title": "Reorient the sign.",
         "method": "PUT",
         "href": self_link,
@@ -1291,8 +1299,8 @@ app.get('/hywit/:adv_id/entrance', function(req, res) {
   var siren = {
     "title": "The Tower Entrance",
     "class": [ "location" ],
-    "properties": { 
-      "name": "The Tower Entrance", 
+    "properties": {
+      "name": "The Tower Entrance",
       "description": "You're standing in front of the tower of the mighty wizard. There's a great oak door in front of you. The door has no door knob. A skull floats ominously in front of the door.",
     },
     "links": [
@@ -1308,8 +1316,8 @@ app.get('/hywit/:adv_id/entrance', function(req, res) {
     siren = {
       "title": "The Tower Entrance",
       "class": [ "location" ],
-      "properties": { 
-        "name": "The Tower Entrance", 
+      "properties": {
+        "name": "The Tower Entrance",
         "description": "As you reach the end of the bridge, you hear a great rattling of bones. A skeleton has risen in the middle of the bridge and is coming toward you. You better think quickly what to do."
       },
       "links": [
@@ -1340,8 +1348,8 @@ app.get('/hywit/:adv_id/snacks', function(req, res) {
   var siren = {
     "title": "A bag of popcorn?",
     "class": [ "location" ],
-    "properties": { 
-      "name": "A bag of popcorn?", 
+    "properties": {
+      "name": "A bag of popcorn?",
       "description": "Incredibly, it seems someone has left a bag of popcorn here. The bag says 'Dr Hofstadter's snacks'.",
     },
     "actions": [
@@ -1365,8 +1373,8 @@ app.post('/hywit/:adv_id/snacks', function(req, res) {
   var siren = {
     "title": "Pushcorn",
     "class": [ "location" ],
-    "properties": { 
-      "name": "Pushcorn", 
+    "properties": {
+      "name": "Pushcorn",
       "description": "Popcorn and pushcorn are incredibly hard to tell apart. You have a strange sensation as you seem to fall through into a new world, except it's remarkably like the old world. Somewhere, a turtle is laughing."
     }
   };
@@ -1378,7 +1386,7 @@ app.post('/hywit/:adv_id/snacks', function(req, res) {
     return advlink(adv_id, relative);
   };
 
-  adv_state.location = alink('entrance'); 
+  adv_state.location = alink('entrance');
 
   startGame(req, res, adv_state, siren);
 });
@@ -1392,8 +1400,8 @@ app.get('/hywit/:adv_id/skcans', function(req, res) {
   var siren = {
     "title": "A bag of popcorn?",
     "class": [ "location" ],
-    "properties": { 
-      "name": "A bag of popcorn?", 
+    "properties": {
+      "name": "A bag of popcorn?",
       "description": "You still have the bag of 'Dr Hofstadter's snacks'."
     },
     "actions": [
@@ -1426,8 +1434,8 @@ app.post('/hywit/:adv_id/skcans', function(req, res) {
   var siren = {
     "title": "Popcorn",
     "class": [ "location" ],
-    "properties": { 
-      "name": "Popcorn", 
+    "properties": {
+      "name": "Popcorn",
       "description": "Popcorn and pushcorn are incredibly hard to tell apart. You have a strange sensation as you seem to fall out from the new world and back to the old one. Somewhere, a laugh is turtleing."
     }
   };
@@ -1451,6 +1459,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     var authHeader = req.headers.authorization;
     var encodedAuthString = authHeader.substring("Basic ".length);
     var decodedAuthString = new Buffer(encodedAuthString, 'base64').toString('ascii');
+    console.log(decodedAuthString)
     var decomp = decodedAuthString.split(':');
     var username = decomp[0];
     var password = decomp[1];
@@ -1463,11 +1472,11 @@ app.get('/hywit/:adv_id/tower', function(req, res){
   var siren = {
     "title": "The Guardian Skull",
     "class": [ "challenge" ],
-    "properties": { 
-      "name": "The Guardian Skull", 
+    "properties": {
+      "name": "The Guardian Skull",
       "description": "The eyes of the floating skull ignite and a voice booms 'Who is my master?', sending shivers down your spine.",
     },
-    "actions": [ 
+    "actions": [
       {
         "name": "answer-skull",
         "title": "State the name of the skull's master.",
@@ -1497,7 +1506,7 @@ app.get('/hywit/:adv_id/tower', function(req, res){
 function tryEnterTower(req, res, master) {
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
-  
+
   if ('undefined' === typeof adv_state) {
     res.status(404).send();
     return;
@@ -1506,6 +1515,9 @@ function tryEnterTower(req, res, master) {
   var alink = function (relative) {
     return advlink(adv_id, relative);
   };
+
+  console.log("masterWizardName " + masterWizardName)
+  console.log("master " + master)
 
   if (masterWizardName === master) {
     adv_state.closed = false;
@@ -1516,8 +1528,8 @@ function tryEnterTower(req, res, master) {
     var siren = {
       "title": "The Guardian Skull",
       "class": [ "challenge" ],
-      "properties": { 
-        "name": "The Guardian Skull", 
+      "properties": {
+        "name": "The Guardian Skull",
         "description": "The skull shrieks 'Wrong answer', and the red glow in its eyes fades out. ",
       },
       "links": [
@@ -1566,21 +1578,21 @@ function turnSign(req, res) {
         adv_state.wizardname = masterWizardName;
         signOrientation = ltrOrientation;
         signText = ltrSignText;
-      } 
+      }
     }
 
     var signDesc = "The sign says '" + signText + "'.";
     var siren = {
       "title": "The Mysterious Sign",
       "class": [ "entity" ],
-      "properties": { 
-        "name": "The Mysterious Sign", 
+      "properties": {
+        "name": "The Mysterious Sign",
         "description": signDesc,
-        "orientation": signOrientation 
+        "orientation": signOrientation
       },
-      "actions": [ 
-        { 
-          "name": "turn-sign", 
+      "actions": [
+        {
+          "name": "turn-sign",
           "title": "Reorient the sign.",
           "method": "PUT",
           "href": self_link,
@@ -1604,7 +1616,7 @@ function turnSign(req, res) {
   }
   else {
     res.status(400).send("Illegal value for 'orientation'." + orientation);
-  }    
+  }
 
   var fsmImage = 'sign-0-gibberish';
   if (orientation === ltrOrientation) {
@@ -1643,7 +1655,7 @@ function startGame(req, res, old_state, siren) {
 
   if (existing_states >= max_existing_states) {
     res.status(503).send();
-    return; 
+    return;
   }
 
   adventures[adv_id] = init_state(adv_id, old_state);
@@ -1651,7 +1663,7 @@ function startGame(req, res, old_state, siren) {
   if (siren) {
     setFsmImage('pcorn', 'pcorn-1');
     res.status(201).location(url).contentType('application/vnd.siren+json').send(siren);
-  } 
+  }
   else {
     setFsmImage('game', 'game-1');
     res.status(201).location(url).send();
@@ -1682,7 +1694,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
     var referer = req.headers['x-alt-referer'];
     if ('undefined' === typeof referer) {
       referer = req.headers.referer;
-    } 
+    }
 
     if (referer !== undefined) {
       if (referer.endsWith('cave')) {
@@ -1691,7 +1703,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
           return;
         }
       }
-    } 
+    }
   }
 
   if (!has_rep(resource)) {
@@ -1717,7 +1729,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
         else {
           action.href = alink(action.href);
         }
-      }      
+      }
     }
 
     if (siren.links) {
@@ -1735,7 +1747,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
             hlink.href = alink(hlink.href);
           }
         }
-      }  
+      }
 
       if (adv_state.old_state) {
         siren.links.push({ "rel": [ "look" ], "title": "A bag of popcorn?", "href": alink('skcans') });
@@ -1830,7 +1842,7 @@ function handleStateDot(symbol, res) {
     res.status(400).send();
     return;
   }
-  
+
   state = stateBuildingFraction;
   setFsmImage('number', 'number-3-fraction');
   fractionstr = fractionstr + symbol;
