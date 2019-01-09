@@ -12,7 +12,7 @@ if (typeof String.prototype.startsWith !== 'function') {
 }
 
 var sendRequest = function(self, opt, requestMethod) {
-  
+
   request(opt, function(error, response, body) {
     var resInfo = {};
 
@@ -22,7 +22,7 @@ var sendRequest = function(self, opt, requestMethod) {
       return;
     }
 
-    if (response.statusCode === 400 || 
+    if (response.statusCode === 400 ||
       response.statusCode === 404 || 
       response.statusCode === 410) {
       var statusName = http.STATUS_CODES[response.statusCode];
@@ -64,7 +64,7 @@ var sendRequest = function(self, opt, requestMethod) {
 
     // TODO: obviously must also be GET request.
     if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {
-      mem[self.at] = { 
+      mem[self.at] = {
         etag: response.headers.etag,
         headers: response.headers,
         body: body
@@ -78,7 +78,7 @@ var sendRequest = function(self, opt, requestMethod) {
     resInfo.etag = self.etag;
 
     var recall;
-    
+
     if (self.statusCode === 304 && mem[self.at]) {
       // Restore state from mem.
       recall = mem[self.at];
@@ -89,7 +89,7 @@ var sendRequest = function(self, opt, requestMethod) {
     }
     else {
       self.headers = response.headers;
-      self.location = response.headers.location; 
+      self.location = response.headers.location;
       self.body = body;
     }
 
@@ -127,7 +127,7 @@ var sendRequest = function(self, opt, requestMethod) {
 
 var visit = function(self, url, accepts) {
   var acceptsHeader = accepts || "application/vnd.siren+json";
-  
+
   var opt = null;
   if (typeof url === 'string') {
     opt = { uri: url };
@@ -188,6 +188,7 @@ var findAction = function(self, actionName) {
       }
     }
   }
+
   return undefined;
 };
 
@@ -199,6 +200,7 @@ var lookupAction = function(self, actionId) {
 
     return self.siren.actions[actionId];
   }
+
   return findAction(self, actionId);
 };
 
@@ -220,7 +222,7 @@ var down = function(uri, filename) {
         r.pipe(fs.createWriteStream("downloads/" + filename));
         var resInfo = {
           "content-type": res.headers['content-type'],
-          downloaded: filename, 
+          downloaded: filename,
           bytes: res.headers['content-length']
         };
         neat(resInfo);
@@ -230,8 +232,8 @@ var down = function(uri, filename) {
         var statusText = resp.statusCode + " " + statusName;
         neat( { error: statusText } );
       }
-    }); 
-  });   
+    });
+  });
 };
 
 exports.download = function(uri, filename) {
@@ -272,11 +274,20 @@ exports.action = function(actionName) {
     }
 };
 
+function fieldHasDefaultValue(field) {
+  var result = 'undefined' !== typeof field.value;
+  console.log("has default value?")
+  console.log(result)
+  return result;
+}
+
 exports.do = function(actionName, formData) {
     var self = this;
 
     // get url from action-name.
     var a = lookupAction(self, actionName);
+
+    console.log(a)
 
     if (a) {
       var requestData = {
@@ -291,6 +302,8 @@ exports.do = function(actionName, formData) {
       };
 
       if ('undefined' !== typeof formData) {
+        console.log("formData is defined.")
+        console.log(formData)
         if (typeof formData === 'string') {
           defaultMethod = formData;
         }
@@ -308,9 +321,20 @@ exports.do = function(actionName, formData) {
           requestData.form = formData;
         }
       }
+      else {
+        if (a.fields !== undefined) {
+          var withDefaultValue = a.fields.filter(fieldHasDefaultValue)
+          var defaultFormData = {}
+          for (var fIndex = 0, len = withDefaultValue.length; fIndex < len; fIndex++) {
+            var fld = withDefaultValue[fIndex]
+            defaultFormData[fld.name] = fld.value
+          }
+          requestData.form = defaultFormData          
+        }
+      }
 
       requestData.method = a.method || defaultMethod;
-      
+
       // also: whatever else necessary to make proper request.
       // includes: http method, request parameters.
       visit(self, requestData);
