@@ -306,6 +306,8 @@ function toResponse(req, res, siren, statusCode) {
     res.set('WWW-Authenticate', 'Basic realm="tower"');
   }
 
+  res.header('Access-Control-Allow-Origin', '*');
+
   if (acceptsSiren(req) || acceptsJson(req)) {
     res.contentType(ct);
     res.status(sc).send(transform(siren));
@@ -574,6 +576,8 @@ app.get('/hywit/:adv_id/lake', function(req, res){
       siren.actions = [ otter ];
     }
     else {
+      siren.properties.description = "You're standing on the shore of a lake. There's small island in the middle. Unfortunately, the current is too strong for you to venture swimming over. An otter with superior swimming skills is swimming in the water.";
+
       siren.links.push({
         "rel": [ "look" ], 
         "title": "Look at the otter.", 
@@ -1607,7 +1611,7 @@ function turnSign(req, res) {
   }    
 
   var fsmImage = 'sign-0-gibberish';
-  if (orientation === ltrOrientation) {
+  if (signOrientation === ltrOrientation) {
     fsmImage = 'sign-1-readable';
   }
 

@@ -247,12 +247,20 @@ exports.help = function(url) {
   var hlp = {
     "game.help()": "Prints this help.",
     "game.at": "Where you are.",
-    "game.all()": "What it looks like.",
+    "game.all()": "What you have to work with.",
     "game.actions()": "Things to do.",
-    "game.do(action, json)": "To do things.",
+    "game.body": "Response body.",
+    "game.do(name[, json])": "To do things.",
+    "game.do(number[, json])": "To do things.",
+    "game.json": "Response body as JSON if applicable.",
     "game.links()": "Where to go.",
-    "game.go(link-no)": "To go somewhere.",
-    "game.follow()": "To follow a link header"
+    "game.look()": "Alias for game.properties().",
+    "game.go(link-number)": "To go somewhere.",
+    "game.follow()": "To follow a link header.",
+    "game.properties()": "What it looks like around you.",
+    "game.siren": "Response body as Siren if applicable.",
+    "game.text()": "Response body as text.",
+    "game.to(url[, mimetype])": "Go to URL"
   };
   neat(hlp);
 };

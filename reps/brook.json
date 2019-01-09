@@ -3,12 +3,12 @@
     "class": [ "location" ],
     "properties": { 
       "name": "The Merry Clucking Brook", 
-      "description": "You’re next to a lovely brook. You see a grassy hill to the west and a mysterious cave to east."
+      "description": "You’re next to a lovely brook. You see a grassy hill to the west and an ominous cave to the east."
     },
     "links": [
       { "rel": [ "self" ], "href": "self" },
       { "rel": [ "move", "west" ], "title": "Go west to the hill.", "href": "hill" },
-      { "rel": [ "move", "east" ], "title": "Go east to cave.", "href": "cave" },
+      { "rel": [ "move", "east" ], "title": "Go east to the cave.", "href": "cave" },
       { "rel": [ "move", "south" ], "title": "Follow the brook south.", "href": "lake" },
       { "rel": [ "view" ], "href": "brook.png", "type": "image/png" }
     ]

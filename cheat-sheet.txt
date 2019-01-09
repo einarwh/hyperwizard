@@ -1,0 +1,12 @@
+game.to('http://localhost:1337/hywit/void', 'application/vnd.siren+json')
+
+game.do('start-adventure', { name: 'Einar', class: 'not much', race: 'programmer' })
+
+game.do('turn-sign', { orientation: 'Left-to-right' })
+
+game.download('http://localhost:1337/images/grue.png', 'something.png')
+
+game.do('kill-grue', 'DELETE')
+
+game.auth('tower', 'master', 'Edsger')
+
