@@ -7,7 +7,7 @@ var lepath = require('path');
 app.use('/elmer', express.static(__dirname + '/elmer'));
 app.use('/images', express.static(__dirname + '/images'));
 
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 if (typeof String.prototype.reverse !== 'function') {
