@@ -152,7 +152,8 @@ var visit = function(self, url, accepts) {
     var authUser = mem.auth.username;
     var authPass = mem.auth.password;
     var authString = authUser + ":" + authPass;
-    var encodedAuthString = new Buffer(authString).toString('base64')
+    // console.log(`authString = ${authString}`);
+    var encodedAuthString = Buffer.from(authString).toString('base64')
     opt.auth = encodedAuthString;
   }
 
@@ -205,7 +206,9 @@ var lookupAction = function(self, actionId) {
 };
 
 var neat = function(json) {
-  console.log(prettyjson.render(json));
+  if (json !== undefined) {
+    console.log(prettyjson.render(json));
+  }
 };
 
 var down = function(uri, filename) {
@@ -276,8 +279,6 @@ exports.action = function(actionName) {
 
 function fieldHasDefaultValue(field) {
   var result = 'undefined' !== typeof field.value;
-  console.log("has default value?")
-  console.log(result)
   return result;
 }
 
@@ -287,7 +288,7 @@ exports.do = function(actionName, formData) {
     // get url from action-name.
     var a = lookupAction(self, actionName);
 
-    console.log(a)
+    //console.log(a)
 
     if (a) {
       var requestData = {
@@ -302,8 +303,8 @@ exports.do = function(actionName, formData) {
       };
 
       if ('undefined' !== typeof formData) {
-        console.log("formData is defined.")
-        console.log(formData)
+        // console.log("formData is defined.")
+        // console.log(formData)
         if (typeof formData === 'string') {
           defaultMethod = formData;
         }
@@ -314,7 +315,7 @@ exports.do = function(actionName, formData) {
               var authDataKey = formDataKeys[0];
               var authDataVal = formData[authDataKey];
               var authString = authDataKey + ":" + authDataVal;
-              var encodedAuthString = new Buffer(authString).toString('base64')
+              var encodedAuthString = Buffer.from(authString).toString('base64')
               requestData.auth = encodedAuthString;
             }
           }

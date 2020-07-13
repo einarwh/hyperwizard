@@ -135,7 +135,7 @@ function s4() {
 function setFsmImage(dir, imageName) {
   //console.log('Set FSM image ' + imageName);
   var pngFile = imageName + ".png";
-  var basePath = lepath.join(__dirname, '../fsmwatcher');
+  var basePath = lepath.join(__dirname, '../hub/fsmwatcher');
   var srcPath = lepath.join(basePath, 'graphs', dir, pngFile);
   var dstPath = lepath.join(basePath, 'fsmimages', pngFile);
   fs.stat(srcPath, function (err, stat) {
@@ -397,6 +397,27 @@ app.get('/hywit/void', function(req, res) {
 });
 
 app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
+  var adv_id = req.params.adv_id;
+  var adv_state = adventures[adv_id];
+
+  if ('undefined' === typeof adv_state) {
+    res.status(404).send();
+    return;
+  }
+
+  var alink = function (relative) {
+    return advlink(adv_id, relative);
+  };
+
+  if (adv_state.closed) {
+    res.status(302).location(alink('hill')).send();
+    return;
+  }
+
+  res.status(418).location(alink('hall')).send();
+});
+
+app.post('/hywit/:adv_id/hall/teapot', function(req, res) {
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
 
@@ -717,6 +738,12 @@ app.get('/hywit/:adv_id/hall', function(req, res){
     return;
   }
 
+  var act = {
+    "name": "make-coffee",
+    "title": "Use teapot to brew some coffee.",
+    "href": alink('hall/teapot')
+  }
+
   var self_link = alink('hall');
   var siren = {
     "title": "The Great Hall",
@@ -725,11 +752,11 @@ app.get('/hywit/:adv_id/hall', function(req, res){
       "name": "The Great Hall",
       "description": "You find yourself in a great hall. There's a table here. You see some cutlery of no interest to you, as well as a beautiful silver tea pot. Could it be magical? A door leads to the east from here."
     },
+    "actions": [ act ],
     "links": [
       { "rel": [ "self" ], "href": self_link },
       { "rel": [ "move", "east" ], "href": alink("mirrors"), "title": "Go through the door to the east." },
-      { "rel": [ "move", "exit" ], "href": alink("entrance"), "title": "Exit the tower." },
-      { "rel": [ "take" ], "href": alink("hall/teapot"), "title": "Take the teapot." }
+      { "rel": [ "move", "exit" ], "href": alink("entrance"), "title": "Exit the tower." }
     ]
   };
 
@@ -1457,17 +1484,14 @@ app.get('/hywit/:adv_id/tower', function(req, res){
     return advlink(adv_id, relative);
   };
 
-  var authorized = false;
-
   if (req.headers.authorization) {
     var authHeader = req.headers.authorization;
     var encodedAuthString = authHeader.substring("Basic ".length);
-    var decodedAuthString = new Buffer(encodedAuthString, 'base64').toString('ascii');
-    console.log(decodedAuthString)
+    var decodedAuthString = Buffer.from(encodedAuthString, 'base64').toString('ascii');
+    //console.log(decodedAuthString)
     var decomp = decodedAuthString.split(':');
     var username = decomp[0];
     var password = decomp[1];
-    authorized = (username === 'master') && (password === 'edsger');
     tryEnterTower(req, res, password);
     return;
   }
@@ -1520,8 +1544,8 @@ function tryEnterTower(req, res, master) {
     return advlink(adv_id, relative);
   };
 
-  console.log("masterWizardName " + masterWizardName)
-  console.log("master " + master)
+  // console.log("masterWizardName " + masterWizardName)
+  // console.log("master " + master)
 
   if (masterWizardName === master) {
     adv_state.closed = false;
@@ -1534,7 +1558,7 @@ function tryEnterTower(req, res, master) {
       "class": [ "challenge" ],
       "properties": {
         "name": "The Guardian Skull",
-        "description": "The skull shrieks 'Wrong answer', and the red glow in its eyes fades out. ",
+        "description": `The skull shrieks 'Wrong answer, ${master} is not my Master!', and the red glow in its eyes fades out.`,
       },
       "links": [
         { "rel": [ "self" ], "href": alink('tower') },
