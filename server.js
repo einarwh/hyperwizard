@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
-//var fs = require('fs');
-var fs = require('fs-extra')
+var fs = require('fs');
 var lepath = require('path');
 
 app.use('/elmer', express.static(__dirname + '/elmer'));
@@ -301,14 +300,14 @@ function toHtml(srn) {
 }
 
 function toResponse(req, res, siren, statusCode) {
-  var sc = statusCode || 200;
+  var sc = statusCode || 200;
   var ct = "application/vnd.siren+json";
   var transform = JSON.stringify;
 
   if (acceptsHtml(req)) {
     ct = "text/html";
     transform = toHtml;
-  }
+  } 
 
   if (statusCode === 401) {
     res.set('WWW-Authenticate', 'Basic realm="tower"');
@@ -955,7 +954,7 @@ app.post('/hywit/:adv_id/study/books/:book_id', function(req, res) {
 
     toResponse(req, res, siren);
   }
-  else if (book_id === 1 || book_id === 2) {
+  else if (book_id === 1 || book_id === 2) {
     var plainJson = {
       "book": book_name(book_id),
       "text": "Well, that's unfortunate. You see, without hyperlinks, you're just stuck here forever."
