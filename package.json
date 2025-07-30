@@ -4,7 +4,6 @@
   "description": "Siren, hypermedia and wizards",
   "main": "start.js",
   "scripts": {
-    // "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
