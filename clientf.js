@@ -1,7 +1,11 @@
-var request = require('request');
+// var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
 var fs = require('fs');
+var stream = require('stream');
+var util = require('util');
+
+const streamPipeline = util.promisify(stream.pipeline);
 
 var mem = { history: [] };
 
@@ -15,7 +19,7 @@ async function handleClientError(self, response) {
   const text = await response.text();
   var info = {
     status: self.status,
-    error: text
+    message: text
   };
   neat({ response: info});
 }
@@ -40,9 +44,16 @@ async function handle200OK(self, url, requestOptions, response) {
   const text = await response.text();
   const contentType = response.headers.get('content-type');
   handlePlace(self, url, text, contentType);
+
+  const etag = response.headers.get('etag');
+  mem[url] = {
+    etag: etag,
+    text: text
+  };
+
   var info = {
     status: self.status,
-    etag: response.headers.get('etag'),
+    etag: etag,
     'content-type': contentType
   };
 
@@ -145,7 +156,6 @@ async function handle418ImATeapot(self, response) {
 }
 
 async function sendRequest(self, url, requestOptions) {
-
   try {
     const response = await fetch(url, requestOptions);
 
@@ -188,6 +198,12 @@ async function sendRequest(self, url, requestOptions) {
       case 404: 
         await handleClientError(self, response);
         break;
+      case 405: 
+        await handleClientError(self, response);
+        break;
+      case 406: 
+        await handleClientError(self, response);
+        break;
       case 410: 
         await handleClientError(self, response);
         break;
@@ -195,21 +211,45 @@ async function sendRequest(self, url, requestOptions) {
         await handle418ImATeapot(self, response);
         break;
       default: 
-        console.log("NO HANDLER FOR " + response.status);
-        console.log("???????????????");
-        console.log(response);
+        console.log("No handler defined for " + response.status);
         break;
     }
   }
   catch (error) {
     console.error('Error fetching data:', error);
   }
-
 }
 
-var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, redirect: 'manual'}) {
-  console.log(`visit ${url}`);
-  console.log(requestOptions);
+async function downloadFile(url, fileName) {
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+      const destPath = `downloads/${fileName}`;
+      await streamPipeline(response.body, fs.createWriteStream(destPath));
+      var info = {
+        'content-type': response.headers.get('content-type'),
+        path: destPath,
+        bytes: response.headers.get('content-length')
+      }
+      neat(info);
+    }
+    else {
+        var statusName = http.STATUS_CODES[response.statusCode];
+        var statusText = resp.statusCode + " " + statusName;
+        // Maybe just response.statusText?
+        neat( { error: statusText } );
+    }
+  } catch (error) {
+    console.error('Error downloading file:', error);
+  }
+}
+
+var visit = function(self, url, requestOptions) {
+  requestOptions = requestOptions || {};
+  requestOptions.method = requestOptions.method || 'GET';
+  requestOptions.headers = requestOptions.headers || {};
+  requestOptions.headers['accept'] = requestOptions.headers['accept'] ||'application/vnd.siren+json';
+  requestOptions.redirect = 'manual'
   
   if (self.at) {
     requestOptions.headers['referer'] = self.at;
@@ -221,6 +261,12 @@ var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, r
     method: requestOptions.method,
     accept: requestOptions.headers['accept'] || 'application/vnd.siren+json',
   }
+
+  if (requestOptions.method === 'GET' && mem[url]) {
+    const etag = mem[url].etag;
+    requestOptions.headers["If-None-Match"] = etag;
+    info["if-none-match"] = etag;
+  } 
 
   // Cumbersome recreation of original body from URLSearchParams.
   if (requestOptions.body) {
@@ -279,37 +325,9 @@ var neat = function(json) {
   }
 };
 
-var down = function(uri, filename) {
-  request.head(uri, function(err, res, body) {
-
-    if (err) {
-      neat( { error: err } );
-      return;
-    }
-
-    var r = request(uri);
-    r.on('response', function (resp) {
-      if (resp.statusCode === 200) {
-        r.pipe(fs.createWriteStream("downloads/" + filename));
-        var resInfo = {
-          "content-type": res.headers['content-type'],
-          downloaded: filename,
-          bytes: res.headers['content-length']
-        };
-        neat(resInfo);
-      }
-      else {
-        var statusName = http.STATUS_CODES[resp.statusCode];
-        var statusText = resp.statusCode + " " + statusName;
-        neat( { error: statusText } );
-      }
-    });
-  });
-};
-
-exports.download = function(uri, filename) {
-  filename = filename || uri.substring(uri.lastIndexOf('/') + 1)
-  down(uri, filename, function() { console.log("done..."); } );
+exports.download = function(url, filename) {
+  filename = filename || url.substring(url.lastIndexOf('/') + 1);
+  downloadFile(url, filename);
 };
 
 exports.to = function(url, accepts) {
@@ -489,11 +507,10 @@ exports.back = function() {
 exports.follow = function() {
     var self = this;
     if (self.destination) {
-      console.log("Following location header to destination " + self.destination);
       visit(self, self.destination);
     }
     else {
-      console.log('No destination set through location header.');
+      console.log('No destination set.');
     }
 };
 

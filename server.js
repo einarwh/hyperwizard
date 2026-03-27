@@ -273,7 +273,7 @@ function toHtml(srn) {
 
     for (var i = 0, len = links.length; i < len; i++) {
       alink = links[i];
-      var linkText = alink.title || alink.rel;
+      var linkText = alink.title || alink.rel;
       s += '<li>' + '<a href="' + alink.href + '">' + linkText + '</a>' + '</li>';
     }
 
@@ -1728,7 +1728,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
     if (referer !== undefined) {
       if (referer.endsWith('cave')) {
         if (undefined === adv_state.grue) {
-          res.status(302).location(alink('grue')).send("The exit is blocked.");
+          res.status(302).location(alink('grue')).send("Uh oh.");
           return;
         }
       }
