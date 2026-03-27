@@ -1,6 +1,6 @@
 {
   "name": "hyperwizard",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Siren, hypermedia and wizards",
   "main": "start.js",
   "scripts": {
@@ -23,7 +23,6 @@
   "dependencies": {
     "express": "^4.16.4",
     "fs": "^0.0.1-security",
-    "prettyjson": "^1.2.1",
-    "request": "^2.88.0"
+    "prettyjson": "^1.2.1"
   }
 }
