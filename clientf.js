@@ -34,7 +34,9 @@ function handlePlace(self, url, text, contentType) {
   }
 }
 
-async function handle200OK(self, url, response) {
+async function handle200OK(self, url, requestOptions, response) {
+  const entry = { url: url, requestOptions: requestOptions };
+  mem.history.push(entry);
   const text = await response.text();
   const contentType = response.headers.get('content-type');
   handlePlace(self, url, text, contentType);
@@ -157,7 +159,7 @@ async function sendRequest(self, url, requestOptions) {
 
     switch (response.status) {
       case 200: 
-        await handle200OK(self, url, response);
+        await handle200OK(self, url, requestOptions, response);
         break;
       case 201: 
         handle201Created(self, response);
@@ -213,7 +215,6 @@ var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, r
     requestOptions.headers['referer'] = self.at;
     requestOptions.headers['x-alt-referer'] = self.at;
   }
-
 
   var info = {
     url: url,
@@ -486,22 +487,13 @@ exports.back = function() {
   if (mem.history.length > 0) {
     mem.history.pop();
     if (mem.history.length > 0) {
-      var info = mem.history[mem.history.length - 1];
-      var opt = info.options;
-      var requestMethod = info.method;
-      if (mem[opt.uri] && requestMethod === 'GET') {
-        opt.headers["If-None-Match"] = mem[opt.uri].etag;
+      const entry = mem.history[mem.history.length - 1];
+      const url = entry.url;
+      const requestOptions = entry.requestOptions;
+      if (mem[url] && requestOptions.method === 'GET') {
+        requestOptions.headers["If-None-Match"] = mem[url].etag;
       }
-
-      var reqInfo = {
-        url: opt.uri,
-        method: requestMethod,
-        accept: opt.headers.Accept
-      };
-
-      neat({ request: reqInfo });
-
-      sendRequest(this, opt, requestMethod);
+      visit(this, url, requestOptions);
     }
   }
 }
