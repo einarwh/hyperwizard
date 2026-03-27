@@ -20,6 +20,33 @@ async function handleClientError(self, response) {
   neat({ response: info});
 }
 
+function handlePlace(self, url, text, contentType) {
+  self.at = url;
+  self.where = url;
+  self.body = text;
+  if (contentType.startsWith('application/vnd.siren+json')) {
+    const json = JSON.parse(text);
+    self.json = json;
+    self.siren = json;
+  }
+  else if (contentType.startsWith('application/json')) {
+    self.json = JSON.parse(text);
+  }
+}
+
+async function handle200OK(self, url, response) {
+  const text = await response.text();
+  const contentType = response.headers.get('content-type');
+  handlePlace(self, url, text, contentType);
+  var info = {
+    status: self.status,
+    etag: response.headers.get('etag'),
+    'content-type': contentType
+  };
+
+  neat({ response: info });
+}
+
 function handle201Created(self, response) {
   self.destination = response.headers.get('location');
   var info = {
@@ -72,27 +99,46 @@ function handle303SeeOther(self, response) {
   neat({ response: info });
 }
 
-async function handle200OK(self, url, response) {
+async function handle401Unauthorized(self, url, response) {
+  mem.challenged = true;
   const text = await response.text();
-  self.at = url;
-  self.where = url;
-  self.body = text;
   const contentType = response.headers.get('content-type');
-  if (contentType.startsWith('application/vnd.siren+json')) {
-    const json = JSON.parse(text);
-    self.json = json;
-    self.siren = json;
-  }
-  else if (contentType.startsWith('application/json')) {
-    self.json = JSON.parse(text);
-  }
-
+  handlePlace(self, url, text, contentType);
   var info = {
     status: self.status,
     etag: response.headers.get('etag'),
     'content-type': contentType
   };
 
+  const authenticate = response.headers.get("www-authenticate");
+  if (authenticate) {
+    info["www-authenticate"] = authenticate;
+  }
+
+  neat({ response: info });
+}
+
+async function handle403Forbidden(self, url, response) {
+  mem.auth = undefined;
+  const text = await response.text();
+  const contentType = response.headers.get('content-type');
+  handlePlace(self, url, text, contentType);
+  var info = {
+    status: self.status,
+    etag: response.headers.get('etag'),
+    'content-type': contentType
+  };
+  neat({ response: info });
+}
+
+async function handle418ImATeapot(self, response) {
+  const text = await response.text();
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination,
+    message: text
+  };
   neat({ response: info });
 }
 
@@ -104,6 +150,8 @@ async function sendRequest(self, url, requestOptions) {
     self.statusCode = response.status;
     self.statusName = http.STATUS_CODES[response.status];
     self.status = self.statusCode + " " + self.statusName;
+
+    mem.challenged = false;
 
     switch (response.status) {
       case 200: 
@@ -127,11 +175,20 @@ async function sendRequest(self, url, requestOptions) {
       case 400: 
         await handleClientError(self, response);
         break;
+      case 401: 
+        await handle401Unauthorized(self, url, response);
+        break;
+      case 403: 
+        await handle403Forbidden(self, url, response);
+        break;
       case 404: 
         await handleClientError(self, response);
         break;
       case 410: 
         await handleClientError(self, response);
+        break;
+      case 418: 
+        await handle418ImATeapot(self, response);
         break;
       default: 
         console.log("NO HANDLER FOR " + response.status);
@@ -155,6 +212,7 @@ var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, r
     requestOptions.headers['x-alt-referer'] = self.at;
   }
 
+
   var info = {
     url: url,
     method: requestOptions.method,
@@ -168,6 +226,17 @@ var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, r
       body[key] = value;
     }
     info.body = body;
+  }
+
+  // Add auth if provided.
+ if (mem.auth !== undefined) {
+    var authUser = mem.auth.username;
+    var authPass = mem.auth.password;
+    var authString = authUser + ":" + authPass;
+    var encodedAuthString = Buffer.from(authString).toString('base64');
+    var authHeaderValue = "Basic " + encodedAuthString;
+    requestOptions.headers['authorization'] = authHeaderValue;
+    info.authorization = authHeaderValue;
   }
 
   neat({ request: info });

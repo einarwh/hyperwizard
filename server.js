@@ -415,9 +415,10 @@ app.get('/hywit/:adv_id/hall/teapot', function(req, res) {
     return;
   }
 
-  res.status(418).location(alink('hall')).send();
+  res.status(418).location(alink('hall')).send("What did you expect?");
 });
 
+// Not in use?
 app.post('/hywit/:adv_id/hall/teapot', function(req, res) {
   var adv_id = req.params.adv_id;
   var adv_state = adventures[adv_id];
@@ -436,7 +437,7 @@ app.post('/hywit/:adv_id/hall/teapot', function(req, res) {
     return;
   }
 
-  res.status(418).location(alink('hall')).send();
+  res.status(418).location(alink('hall')).send("What did you expect?");
 });
 
 app.get('/hywit/:adv_id/divide', function(req, res) {
@@ -1545,13 +1546,10 @@ function tryEnterTower(req, res, master) {
     return advlink(adv_id, relative);
   };
 
-  // console.log("masterWizardName " + masterWizardName)
-  // console.log("master " + master)
-
   if (masterWizardName === master) {
     adv_state.closed = false;
     setFsmImage('auth', 'auth-200');
-    res.status(302).location(alink('hall')).send();
+    res.status(302).location(alink('hall')).send('You may enter.');
   }
   else {
     var siren = {
