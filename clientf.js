@@ -11,9 +11,11 @@ if (typeof String.prototype.startsWith !== 'function') {
   };
 }
 
-function handleClientError(self, response) {
+async function handleClientError(self, response) {
+  const text = await response.text();
   var info = {
     status: self.status,
+    error: text
   };
   neat({ response: info});
 }
@@ -27,8 +29,25 @@ function handle201Created(self, response) {
   neat({ response: info });
 }
 
+function handle202Accepted(self, response) {
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination
+  };
+  neat({ response: info });
+}
+
+function handle303SeeOther(self, response) {
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination
+  };
+  neat({ response: info });
+}
+
 async function handle200OK(self, response) {
-  console.log("handle 200 OK response");
   const text = await response.text();
   self.body = text;
   const contentType = response.headers.get('content-type');
@@ -67,18 +86,25 @@ async function sendRequest(self, url, requestOptions) {
       case 201: 
         handle201Created(self, response);
         break;
+      case 202: 
+        handle202Accepted(self, response);
+        break;
+      case 303: 
+        handle303SeeOther(self, response);
+        break;
       case 400: 
-        handleClientError(self, response);
+        await handleClientError(self, response);
         break;
       case 404: 
-        handleClientError(self, response);
+        await handleClientError(self, response);
         break;
       case 410: 
-        handleClientError(self, response);
+        await handleClientError(self, response);
         break;
       default: 
         console.log("NO HANDLER FOR " + response.status);
-        console.log("???????????????")
+        console.log("???????????????");
+        console.log(response);
         break;
     }
  
@@ -95,14 +121,23 @@ async function sendRequest(self, url, requestOptions) {
 
 }
 
-var visit = function(self, url, requestOptions = { method: 'GET', headers: {}}) {
+var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, redirect: 'manual'}) {
   console.log(`visit ${url}`);
   console.log(requestOptions);
 
   var info = {
     url: url,
-    method: requestOptions.method || 'GET',
-    accept: requestOptions.headers['accept'] || 'application/vnd.siren+json'
+    method: requestOptions.method,
+    accept: requestOptions.headers['accept'] || 'application/vnd.siren+json',
+  }
+
+  // Cumbersome recreation of original body from URLSearchParams.
+  if (requestOptions.body) {
+    var body = {}
+    for (const [key, value] of requestOptions.body) {
+      body[key] = value;
+    }
+    info.body = body;
   }
 
   neat({ request: info });
@@ -213,7 +248,11 @@ function fieldHasDefaultValue(field) {
   return result;
 }
 
-exports.do = function(actionName, formData) {
+exports.do = function(actionName, payload) {
+    console.log("action: " + actionName);
+    console.log("payload: ");
+    console.log(payload);
+
     var self = this;
 
     // get url from action-name.
@@ -223,10 +262,10 @@ exports.do = function(actionName, formData) {
     console.log(a);
 
     if (a) {
-      var requestData = {
-        uri: a.href,
-        method: a.method || "GET"
-      };
+      // var requestData = {
+      //   uri: a.href,
+      //   method: a.method || "GET"
+      // };
 
       var defaultMethod = "GET";
 
@@ -234,16 +273,16 @@ exports.do = function(actionName, formData) {
         uri: a.href,
       };
 
-      if ('undefined' !== typeof formData) {
-        // console.log("formData is defined.")
-        // console.log(formData)
-        if (typeof formData === 'string') {
-          defaultMethod = formData;
+      if ('undefined' !== typeof payload) {
+        // console.log("payload is defined.")
+        // console.log(payloag)
+        if (typeof payload === 'string') {
+          defaultMethod = payload;
         }
         else {
           if (mem.challenged === true) {
-            var formDataKeys = Object.keys(formData);
-            if (formDataKeys.length > 0) {
+            var formDataKeys = Object.keys(payload);
+            if (formDataKeys.length > 0) {
               var authDataKey = formDataKeys[0];
               var authDataVal = formData[authDataKey];
               var authString = authDataKey + ":" + authDataVal;
@@ -251,7 +290,7 @@ exports.do = function(actionName, formData) {
               requestData.auth = encodedAuthString;
             }
           }
-          requestData.form = formData;
+          requestData.body = new URLSearchParams(payload);
         }
       }
       else {

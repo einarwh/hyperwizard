@@ -328,7 +328,7 @@ function toResponse(req, res, siren, statusCode) {
 }
 
 function toJsonResponse(req, res, siren, statusCode) {
-  var sc = statusCode || 200;
+  var sc = statusCode || 200;
   var ct = "application/json";
   var transform = JSON.stringify;
 
@@ -676,8 +676,8 @@ app.get('/hywit/:adv_id/otter', function(req, res){
 
   var current = Date.now() / 1000;
   var elapsed = current - adv_state.otter;
-  var totalTime = 120;
-  var halfTime = 60;
+  var totalTime = 6; // 120
+  var halfTime = 3; // 60
   var otterReturned = elapsed > totalTime;
   if (otterReturned) {
     adv_state.boat = current;
@@ -691,7 +691,7 @@ app.get('/hywit/:adv_id/otter', function(req, res){
   var otterReturning = elapsed > halfTime;
 
   var self_link = alink('otter');
-  var siren = {
+  var siren = {    
     "title": "The Swimming Otter",
     "class": [ "entity" ],
     "properties": {
@@ -1644,7 +1644,7 @@ function turnSign(req, res) {
     toResponse(req, res, siren);
   }
   else {
-    res.status(400).send("Illegal value for 'orientation'." + orientation);
+    res.status(400).send("Illegal value for 'orientation': " + orientation);
   }
 
   var fsmImage = 'sign-0-gibberish';
@@ -1700,6 +1700,8 @@ function startGame(req, res, old_state, siren) {
 }
 
 app.post('/hywit/void', function(req, res) {
+  console.log("POST /hywit/void");
+  // console.log(req);
   startGame(req, res);
 });
 

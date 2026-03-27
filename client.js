@@ -128,6 +128,9 @@ var sendRequest = function(self, opt, requestMethod) {
 var visit = function(self, url, accepts) {
   var acceptsHeader = accepts || "application/vnd.siren+json";
 
+  console.log("visit");
+  console.log(url);
+
   var opt = null;
   if (typeof url === 'string') {
     opt = { uri: url };
@@ -330,7 +333,7 @@ exports.do = function(actionName, formData) {
             var fld = withDefaultValue[fIndex]
             defaultFormData[fld.name] = fld.value
           }
-          requestData.form = defaultFormData          
+          requestData.form = defaultFormData
         }
       }
 
