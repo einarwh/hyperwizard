@@ -38,6 +38,31 @@ function handle202Accepted(self, response) {
   neat({ response: info });
 }
 
+async function handle204NoContent(self, response) {
+  const text = await response.text();
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination,
+  };
+  if (text) {
+    info.message = text;
+  }
+
+  neat({ response: info });
+}
+
+async function handle302Found(self, response) {
+  const text = await response.text();
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination,
+    message: text
+  };
+  neat({ response: info });
+}
+
 function handle303SeeOther(self, response) {
   self.destination = response.headers.get('location');
   var info = {
@@ -47,8 +72,10 @@ function handle303SeeOther(self, response) {
   neat({ response: info });
 }
 
-async function handle200OK(self, response) {
+async function handle200OK(self, url, response) {
   const text = await response.text();
+  self.at = url;
+  self.where = url;
   self.body = text;
   const contentType = response.headers.get('content-type');
   if (contentType.startsWith('application/vnd.siren+json')) {
@@ -67,7 +94,6 @@ async function handle200OK(self, response) {
   };
 
   neat({ response: info });
-
 }
 
 async function sendRequest(self, url, requestOptions) {
@@ -81,13 +107,19 @@ async function sendRequest(self, url, requestOptions) {
 
     switch (response.status) {
       case 200: 
-        await handle200OK(self, response);
+        await handle200OK(self, url, response);
         break;
       case 201: 
         handle201Created(self, response);
         break;
       case 202: 
         handle202Accepted(self, response);
+        break;
+      case 204: 
+        await handle204NoContent(self, response);
+        break;
+      case 302: 
+        await handle302Found(self, response);
         break;
       case 303: 
         handle303SeeOther(self, response);
@@ -107,13 +139,6 @@ async function sendRequest(self, url, requestOptions) {
         console.log(response);
         break;
     }
- 
-    // console.log("RESPONSE HEADERS");
-    // console.log(response.headers);
-    // for (const [key, value] of response.headers) {
-    //   console.log(`${key}: ${value}`);
-    // }
-
   }
   catch (error) {
     console.error('Error fetching data:', error);
@@ -124,6 +149,11 @@ async function sendRequest(self, url, requestOptions) {
 var visit = function(self, url, requestOptions = { method: 'GET', headers: {}, redirect: 'manual'}) {
   console.log(`visit ${url}`);
   console.log(requestOptions);
+  
+  if (self.at) {
+    requestOptions.headers['referer'] = self.at;
+    requestOptions.headers['x-alt-referer'] = self.at;
+  }
 
   var info = {
     url: url,

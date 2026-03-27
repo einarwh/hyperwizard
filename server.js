@@ -822,7 +822,7 @@ function killGrue(req, res) {
   setFsmImage('grue', 'grue-2-gone');
 
   adv_state.grue = "dead";
-  res.status(204).location(alink('brook')).send();
+  res.status(204).location(alink('brook')).send("The grue is gone.");
 }
 
 function eatenByGrue(res) {
@@ -1730,7 +1730,7 @@ app.get('/hywit/:adv_id/:resource', function(req, res) {
     if (referer !== undefined) {
       if (referer.endsWith('cave')) {
         if (undefined === adv_state.grue) {
-          res.status(302).location(alink('grue')).send();
+          res.status(302).location(alink('grue')).send("The exit is blocked.");
           return;
         }
       }
