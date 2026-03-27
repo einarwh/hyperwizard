@@ -351,23 +351,13 @@ function fieldHasDefaultValue(field) {
 }
 
 exports.do = function(actionName, payload) {
-    console.log("action: " + actionName);
-    console.log("payload: ");
-    console.log(payload);
-
     var self = this;
 
     // get url from action-name.
     var a = lookupAction(self, actionName);
 
-    console.log("ACTION");
-    console.log(a);
 
     if (a) {
-      // var requestData = {
-      //   uri: a.href,
-      //   method: a.method || "GET"
-      // };
 
       var defaultMethod = "GET";
 
@@ -376,8 +366,6 @@ exports.do = function(actionName, payload) {
       };
 
       if ('undefined' !== typeof payload) {
-        // console.log("payload is defined.")
-        // console.log(payloag)
         if (typeof payload === 'string') {
           defaultMethod = payload;
         }
