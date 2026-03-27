@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/einarwh/hyperwizard",
   "dependencies": {
-    "express": "^4.16.4",
-    "prettyjson": "^1.2.1"
+    "express": "^4.22.1",
+    "prettyjson": "^1.2.5"
   }
 }
