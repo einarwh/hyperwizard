@@ -1,4 +1,3 @@
-// var request = require('request');
 var http = require('http');
 var prettyjson = require('prettyjson');
 var fs = require('fs');
