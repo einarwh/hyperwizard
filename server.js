@@ -31,7 +31,7 @@ var adventures = {};
 var masterWizardName = "Edsger";
 
 function book_name(index) {
-  if (index === 1) {
+  if (index === 1) {
     return "Plain JSON REST APIs for fun and profit";
   }
   if (index === 2) {
@@ -139,7 +139,7 @@ function setFsmImage(dir, imageName) {
   var dstPath = lepath.join(basePath, 'fsmimages', pngFile);
   fs.stat(srcPath, function (err, stat) {
     if (err == null) {
-      fs.copySync(srcPath, dstPath);
+      fs.copyFileSync(srcPath, dstPath);
     } else if(err.code == 'ENOENT') {
       console.log("FSM image doesn't exist. " + srcPath);
     } else {

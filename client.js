@@ -126,7 +126,7 @@ var sendRequest = function(self, opt, requestMethod) {
 }
 
 var visit = function(self, url, accepts) {
-  var acceptsHeader = accepts || "application/vnd.siren+json";
+  var acceptsHeader = accepts || "application/vnd.siren+json";
 
   var opt = null;
   if (typeof url === 'string') {
@@ -139,7 +139,7 @@ var visit = function(self, url, accepts) {
 
   var reqInfo = {};
 
-  var requestMethod = opt.method || "GET";
+  var requestMethod = opt.method || "GET";
   reqInfo.url = opt.uri;
   reqInfo.method = requestMethod;
   opt.headers = {
