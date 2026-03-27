@@ -150,6 +150,8 @@ async function sendRequest(self, url, requestOptions) {
     self.statusCode = response.status;
     self.statusName = http.STATUS_CODES[response.status];
     self.status = self.statusCode + " " + self.statusName;
+    self.json = null;
+    self.siren = null;
 
     mem.challenged = false;
 
@@ -524,19 +526,19 @@ exports.what = function () {
 };
 
 exports.actions = function () {
-  neat(this.siren.actions);
+  neat(this.siren?.actions);
 };
 
 exports.links = function () {
-  neat(this.siren.links);
+  neat(this.siren?.links);
 };
 
 exports.properties = function() {
-  neat(this.siren.properties);
+  neat(this.siren?.properties);
 };
 
 exports.look = function() {
-  neat(this.siren.properties);
+  neat(this.siren?.properties);
 };
 
 exports.text = function() {
