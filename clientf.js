@@ -11,172 +11,103 @@ if (typeof String.prototype.startsWith !== 'function') {
   };
 }
 
-var sendRequest = function(self, opt, requestMethod) {
+function handleClientError(self, response) {
+  var info = {
+    status: self.status,
+  };
+  neat({ response: info});
+}
 
-  request(opt, function(error, response, body) {
-    var resInfo = {};
+function handle201Created(self, response) {
+  self.destination = response.headers.get('location');
+  var info = {
+    status: self.status,
+    location: self.destination
+  };
+  neat({ response: info });
+}
 
-    if (error) {
-      resInfo.error = error;
-      neat({ response: resInfo});
-      return;
-    }
+async function handle200OK(self, response) {
+  console.log("handle 200 OK response");
+  const text = await response.text();
+  self.body = text;
+  const contentType = response.headers.get('content-type');
+  if (contentType.startsWith('application/vnd.siren+json')) {
+    const json = JSON.parse(text);
+    self.json = json;
+    self.siren = json;
+  }
+  else if (contentType.startsWith('application/json')) {
+    self.json = JSON.parse(text);
+  }
 
-    if (response.statusCode === 400 ||
-      response.statusCode === 404 || 
-      response.statusCode === 410) {
-      var statusName = http.STATUS_CODES[response.statusCode];
-      var statusSummary = response.statusCode + " " + statusName;
-      resInfo.status = statusSummary;
-      // resInfo.etag = response.headers.etag;
-      neat({ response: resInfo});
+  var info = {
+    status: self.status,
+    etag: response.headers.get('etag'),
+    'content-type': contentType
+  };
 
-      return;
-    }
-
-    if (response.statusCode === 401) {
-      mem.challenged = true;
-      mem.auth = undefined;
-    }
-    else {
-      mem.challenged = false;
-    }
-
-    if (response.statusCode === 403) {
-      mem.auth = undefined;
-    }
-
-    if (typeof opt === 'string') {
-      self.request = { uri: opt };
-      self.at = opt;
-    }
-    else {
-      self.request = opt;
-      self.at = opt.uri;
-    }
-    self.where = self.at;
-    self.statusCode = response.statusCode;
-
-    if (self.statusCode >= 200 && self.statusCode < 300) {
-      var remember = { method: requestMethod, options: opt };
-      mem.history.push(remember);
-    }
-
-    // TODO: obviously must also be GET request.
-    if (response.headers.etag && requestMethod === 'GET' && self.statusCode >= 200 && self.statusCode < 300) {
-      mem[self.at] = {
-        etag: response.headers.etag,
-        headers: response.headers,
-        body: body
-      };
-    }
-
-    self.statusName = http.STATUS_CODES[response.statusCode];
-    self.status = self.statusCode + " " + self.statusName;
-    self.etag = response.headers.etag;
-    resInfo.status = self.status;
-    resInfo.etag = self.etag;
-
-    var recall;
-
-    if (self.statusCode === 304 && mem[self.at]) {
-      // Restore state from mem.
-      recall = mem[self.at];
-      self.headers = recall.headers;
-      self.location = recall.location;
-      self.body = recall.body;
-
-    }
-    else {
-      self.headers = response.headers;
-      self.location = response.headers.location;
-      self.body = body;
-    }
-
-    if (self.location) {
-      resInfo.location = self.location;
-    }
-
-    if (self.headers["content-type"]) {
-      resInfo["content-type"] = self.headers["content-type"];
-    }
-
-    if (self.headers["www-authenticate"]) {
-      resInfo["www-authenticate"] = self.headers["www-authenticate"];
-    }
-
-    var contentType = self.headers["content-type"];
-    if (self.body.length > 0 && contentType.startsWith("application/vnd.siren+json")) {
-      self.siren = JSON.parse(self.body);
-    }
-    else {
-      self.siren = "";
-    }
-
-    self.json = self.siren;
-
-    if (self.body.length > 0 && contentType.startsWith("application/json")) {
-      self.json = JSON.parse(self.body);
-      self.siren = "";
-    }
-
-    neat({ response: resInfo });
-  });
+  neat({ response: info });
 
 }
 
-var visit = function(self, url, accepts) {
-  var acceptsHeader = accepts || "application/vnd.siren+json";
+async function sendRequest(self, url, requestOptions) {
 
-  var opt = null;
-  if (typeof url === 'string') {
-    opt = { uri: url };
+  try {
+    const response = await fetch(url, requestOptions);
+
+    self.statusCode = response.status;
+    self.statusName = http.STATUS_CODES[response.status];
+    self.status = self.statusCode + " " + self.statusName;
+
+    switch (response.status) {
+      case 200: 
+        await handle200OK(self, response);
+        break;
+      case 201: 
+        handle201Created(self, response);
+        break;
+      case 400: 
+        handleClientError(self, response);
+        break;
+      case 404: 
+        handleClientError(self, response);
+        break;
+      case 410: 
+        handleClientError(self, response);
+        break;
+      default: 
+        console.log("NO HANDLER FOR " + response.status);
+        console.log("???????????????")
+        break;
+    }
+ 
+    // console.log("RESPONSE HEADERS");
+    // console.log(response.headers);
+    // for (const [key, value] of response.headers) {
+    //   console.log(`${key}: ${value}`);
+    // }
+
   }
-  else {
-    opt = url;
-  }
-  opt.followRedirect = false;
-
-  var reqInfo = {};
-
-  var requestMethod = opt.method || "GET";
-  reqInfo.url = opt.uri;
-  reqInfo.method = requestMethod;
-  opt.headers = {
-    "Accept": acceptsHeader,
-    "Referer": self.at,
-    "X-Alt-Referer": self.at
-  };
-
-  if (mem.auth !== undefined) {
-    var authUser = mem.auth.username;
-    var authPass = mem.auth.password;
-    var authString = authUser + ":" + authPass;
-    // console.log(`authString = ${authString}`);
-    var encodedAuthString = Buffer.from(authString).toString('base64')
-    opt.auth = encodedAuthString;
-  }
-
-  if (opt.auth !== undefined) {
-    opt.headers["Authorization"] = "Basic " + opt.auth;
-    opt.auth = undefined;
-    reqInfo.authorization = opt.headers.Authorization;
-  }
-
-  reqInfo.accept = opt.headers.Accept;
-
-  if (mem[opt.uri] && requestMethod === 'GET') {
-    opt.headers["If-None-Match"] = mem[opt.uri].etag;
-    reqInfo["if-none-match"] = mem[opt.uri].etag;
+  catch (error) {
+    console.error('Error fetching data:', error);
   }
 
-  if (opt.form) {
-    reqInfo.form = opt.form;
+}
+
+var visit = function(self, url, requestOptions = { method: 'GET', headers: {}}) {
+  console.log(`visit ${url}`);
+  console.log(requestOptions);
+
+  var info = {
+    url: url,
+    method: requestOptions.method || 'GET',
+    accept: requestOptions.headers['accept'] || 'application/vnd.siren+json'
   }
 
-  neat({ request: reqInfo });
+  neat({ request: info });
 
-  sendRequest(self, opt, requestMethod);
+  sendRequest(self, url, requestOptions);
 };
 
 var findAction = function(self, actionName) {
@@ -288,7 +219,8 @@ exports.do = function(actionName, formData) {
     // get url from action-name.
     var a = lookupAction(self, actionName);
 
-    //console.log(a)
+    console.log("ACTION");
+    console.log(a);
 
     if (a) {
       var requestData = {
@@ -335,10 +267,11 @@ exports.do = function(actionName, formData) {
       }
 
       requestData.method = a.method || defaultMethod;
+      requestData.headers = {};
 
       // also: whatever else necessary to make proper request.
       // includes: http method, request parameters.
-      visit(self, requestData);
+      visit(self, a.href, requestData);
     } else {
       var acts = self.siren.actions;
       if (acts === undefined || acts.length === 0) {
@@ -358,8 +291,14 @@ exports.azure = function() {
     visit(this, 'http://hyperwizard.azurewebsites.net/hywit/void');
 };
 
-exports.void = function(accepts) {
-    visit(this, 'http://localhost:1337/hywit/void', accepts);
+exports.void = function(acceptsFormat) {
+  var acceptsHeader = acceptsFormat || "application/vnd.siren+json";
+  var reqOptions = {
+    headers: {
+      'accept': acceptsHeader
+    }
+  };
+  visit(this, 'http://localhost:1337/hywit/void', reqOptions);
 };
 
 exports.study = function() {
@@ -429,11 +368,12 @@ exports.back = function() {
 
 exports.follow = function() {
     var self = this;
-    if (self.location) {
-      visit(self, self.location);
+    if (self.destination) {
+      console.log("Following location header to destination " + self.destination);
+      visit(self, self.destination);
     }
     else {
-      console.log('No location header set.');
+      console.log('No destination set through location header.');
     }
 };
 

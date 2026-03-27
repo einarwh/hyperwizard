@@ -153,11 +153,13 @@ function acceptsHtml(req) {
 }
 
 function acceptsJson(req) {
-  return req.headers.accept.indexOf("application/json") >= 0;
+  const acceptsAll = req.headers.accept.startsWith("*/*");
+  return acceptsAll || req.headers.accept.indexOf("application/json") >= 0;
 }
 
 function acceptsSiren(req) {
-  return req.headers.accept.indexOf("application/vnd.siren+json") >= 0;
+  const acceptsAll = req.headers.accept.startsWith("*/*");
+  return acceptsAll || req.headers.accept.indexOf("application/vnd.siren+json") >= 0;
 }
 
 function toActionForm(act) {
