@@ -91,23 +91,16 @@ async function handle204NoContent(self, response) {
   neat({ response: info });
 }
 
-async function handle302Found(self, response) {
+async function handle3XX(self, response) {
   const text = await response.text();
   self.destination = response.headers.get('location');
   var info = {
     status: self.status,
     location: self.destination,
-    message: text
   };
-  neat({ response: info });
-}
-
-function handle303SeeOther(self, response) {
-  self.destination = response.headers.get('location');
-  var info = {
-    status: self.status,
-    location: self.destination
-  };
+  if (text) {
+    info.message = text;
+  }
   neat({ response: info });
 }
 
@@ -179,11 +172,14 @@ async function sendRequest(self, url, requestOptions) {
       case 204: 
         await handle204NoContent(self, response);
         break;
+      case 301: 
+        await handle3XX(self, response);
+        break;
       case 302: 
-        await handle302Found(self, response);
+        await handle3XX(self, response);
         break;
       case 303: 
-        handle303SeeOther(self, response);
+        await handle3XX(self, response);
         break;
       case 400: 
         await handleClientError(self, response);
@@ -211,6 +207,7 @@ async function sendRequest(self, url, requestOptions) {
         break;
       default: 
         console.log("No handler defined for " + response.status);
+        console.log(response);
         break;
     }
   }
@@ -248,7 +245,7 @@ var visit = function(self, url, requestOptions) {
   requestOptions.method = requestOptions.method || 'GET';
   requestOptions.headers = requestOptions.headers || {};
   requestOptions.headers['accept'] = requestOptions.headers['accept'] ||'application/vnd.siren+json';
-  requestOptions.redirect = 'manual'
+  requestOptions.redirect = self.redirection || 'manual';
   
   if (self.at) {
     requestOptions.headers['referer'] = self.at;
@@ -434,7 +431,7 @@ exports.do = function(actionName, payload) {
 };
 
 exports.azure = function() {
-    visit(this, 'http://hyperwizard.azurewebsites.net/hywit/void');
+    visit(this, 'https://hyperwizard.azurewebsites.net/hywit/void');
 };
 
 exports.void = function(acceptsFormat) {
@@ -502,6 +499,18 @@ exports.back = function() {
     }
   }
 }
+
+exports.redirect = function(automatic) {
+  var self = this;
+  if (automatic) {
+    self.redirection = 'follow';
+    console.log("Automatically follow redirects.");
+  }
+  else {
+    self.redirection = 'manual';
+    console.log("Manually follow redirects.");
+  }
+};
 
 exports.follow = function() {
     var self = this;

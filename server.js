@@ -108,7 +108,7 @@ var base_url = 'http://localhost:' + local_port;
 var port = process.env.PORT || local_port;
 
 if (process.env.PORT) {
-  base_url = 'http://hyperwizard.azurewebsites.net';
+  base_url = 'https://hyperwizard.azurewebsites.net';
 }
 
 var game_url = base_url + '/hywit/';
